@@ -1,0 +1,40 @@
+卷 TEST 的文件夹 PATH 列表
+卷序列号为 6A75-7210
+E:.
+├─.gradle
+│  ├─9.0-milestone-1
+│  │  ├─checksums
+│  │  ├─executionHistory
+│  │  ├─expanded
+│  │  ├─fileChanges
+│  │  ├─fileHashes
+│  │  └─vcsMetadata
+│  ├─buildOutputCleanup
+│  ├─kotlin
+│  │  └─errors
+│  └─vcs-1
+├─.idea
+│  └─caches
+├─app
+│  └─src
+│      └─main
+│          ├─assets
+│          ├─java
+│          │  └─com
+│          │      └─damaihelper
+│          │          ├─model
+│          │          ├─network
+│          │          ├─service
+│          │          ├─strategy
+│          │          ├─ui
+│          │          └─utils
+│          └─res
+│              ├─drawable
+│              ├─layout
+│              ├─values
+│              └─xml
+├─build
+│  └─reports
+│      └─problems
+└─gradle
+    └─wrapper

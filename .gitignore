@@ -1,0 +1,8 @@
+*.hprof
+*.log
+*.tmp
+/local.properties
+/.idea/
+/.gradle/
+/build/
+/app/build/

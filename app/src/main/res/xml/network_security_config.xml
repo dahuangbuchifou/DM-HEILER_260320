@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <!-- 允许验证码 API 的 HTTP 通信 -->
+    <domain-config cleartextTrafficPermitted="true">
+        <!-- 超级鹰 -->
+        <domain includeSubdomains="true">upload.chaojiying.net</domain>
+        <!-- 京东云无限 -->
+        <domain includeSubdomains="true">api.jfbym.com</domain>
+        <!-- 2Captcha -->
+        <domain includeSubdomains="true">2captcha.com</domain>
+        <domain includeSubdomains="true">api.2captcha.com</domain>
+    </domain-config>
+
+    <!-- 默认配置：仅允许 HTTPS -->
+    <base-config cleartextTrafficPermitted="false">
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+</network-security-config>

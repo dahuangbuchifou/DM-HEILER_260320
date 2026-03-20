@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">大麦抢票助手</string>
+    <string name="accessibility_service_label">大麦抢票辅助服务</string>
+    <string name="accessibility_service_description">提供大麦网抢票辅助功能，请谨慎使用。</string>
+
+    <string name="task_config_title">任务配置</string>
+    <string name="edit">编辑</string>
+    <string name="delete">删除</string>
+    <string name="no_tasks_yet">暂无抢票任务，点击右下角按钮添加。</string>
+    <string name="add_new_task">添加抢票任务</string>
+
+    <string name="task_status_idle">空闲</string>
+    <string name="task_status_waiting">等待中</string>
+    <string name="task_status_running">抢票中</string>
+    <string name="task_status_success">成功</string>
+    <string name="task_status_failed">失败</string>
+
+    <string name="start_grabbing">开始抢票</string>
+    <string name="stop_grabbing">停止抢票</string>
+
+    <string name="task_name_hint">任务名称 (例如：刘宇宁大连演唱会)</string>
+    <string name="concert_keyword_hint">演出关键词 (例如：刘宇宁)</string>
+    <string name="concert_date_hint">抢票日期 (例如：2025-12-31)</string>
+    <string name="concert_time_hint">抢票时间 (例如：20:00)</string>
+    <string name="ticket_price_hint">票档关键词 (例如：888元)</string>
+    <string name="ticket_count_hint">购票数量 (例如：1)</string>
+    <string name="viewer_name_hint">观演人姓名 (多个用逗号分隔)</string>
+
+    <string name="enable_accessibility_service">请在系统设置中开启“大麦抢票辅助服务”</string>
+    <string name="save_task">保存任务</string>
+    <string name="edit_task">编辑任务</string>
+    <string name="delete_task">删除任务</string>
+    <string name="notification_channel_name">抢票服务通知</string>
+    <string name="notification_channel_description">用于显示抢票服务的运行状态</string>
+    <string name="foreground_service_notification_title">大麦抢票助手正在运行</string>
+    <string name="foreground_service_notification_content">点击查看抢票任务状态</string>
+    <string name="captcha_type_text">文本验证码</string>
+    <string name="captcha_type_slide">滑动验证码</string>
+    <string name="captcha_type_click">点选验证码</string>
+    <string name="captcha_recognition_failed">验证码识别失败，请手动处理</string>
+    <string name="captcha_input_hint">请输入验证码</string>
+    <string name="submit_captcha">提交</string>
+    <string name="too_many_people_retry">抢票人数太多啦，继续尝试别放弃！</string>
+    <string name="too_many_people_retry_button">继续尝试</string>
+    <string name="login_username_hint">大麦账号</string>
+    <string name="login_password_hint">大麦密码</string>
+    <string name="login_button_text">登录</string>
+    <string name="logout_button_text">退出登录</string>
+    <string name="logged_in_as">已登录: %s</string>
+    <string name="not_logged_in">未登录</string>
+    <string name="login_failed">登录失败: %s</string>
+    <string name="login_success">登录成功</string>
+    <string name="api_login_failed">API登录失败，请检查账号密码或网络</string>
+    <string name="api_login_success">API登录成功</string>
+    <string name="api_login_required">API登录信息缺失，请先登录</string>
+
+    <string name="question_answering_title">请回答问题</string>
+    <string name="question_answering_submit">提交</string>
+
+</resources>

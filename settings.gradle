@@ -1,0 +1,31 @@
+pluginManagement {
+    repositories {
+        // --- 优先使用官方仓库 ---
+        google()
+        mavenCentral()
+
+        // --- 随后是镜像和插件门户 ---
+         maven { url 'https://maven.aliyun.com/repository/google' }
+         maven { url 'https://maven.aliyun.com/repository/public' }
+         maven { url 'https://maven.aliyun.com/repository/gradle-plugin' }
+        gradlePluginPortal()
+    }
+}
+
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
+    repositories {
+        // --- 优先使用官方仓库 ---
+        google()
+        mavenCentral()
+
+        // --- 随后是镜像 ---
+        maven { url 'https://maven.aliyun.com/repository/google' }
+        maven { url 'https://maven.aliyun.com/repository/public' }
+        // ⚠️ 关键修复：添加 Jitpack 仓库（TrueTime 依赖）
+        maven { url = uri("https://jitpack.io") }
+    }
+}
+
+rootProject.name = "DamaiTicketHelper"
+include ':app'
