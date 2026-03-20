@@ -1,13 +1,33 @@
-<?xml version="1.0" encoding="utf-8"?>
+<!-- ============================================================================
+     📅 修复日期：2026-03-20
+     🔧 修复内容：
+       - 确认 Android 14+ (API 34) 前台服务权限配置
+       - 添加 WAKE_LOCK 权限（防止抢票时休眠）
+       - 添加 RECEIVE_BOOT_COMPLETED（可选：开机自启）
+     📝 说明：应用清单 - 权限和服务配置
+     ============================================================================ -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <!-- 基础网络权限 -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    
+    <!-- 前台服务权限（Android 14+ 需要 specialUse） -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
-    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+    
+    <!-- 通知权限（Android 13+） -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    
+    <!-- 系统弹窗权限（悬浮窗） -->
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    
+    <!-- ✅ 新增：防止休眠（抢票时保持 CPU 运行） -->
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    
+    <!-- ✅ 新增：开机自启（可选） -->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <queries>
         <package android:name="com.taobao.taobao" />
