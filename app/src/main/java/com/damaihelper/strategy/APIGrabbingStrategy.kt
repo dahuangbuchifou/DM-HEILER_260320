@@ -219,9 +219,9 @@ class APIGrabbingStrategy(private val context: Context) : TicketGrabbingStrategy
             
             // 3. 获取票价信息
             Log.d(TAG, "步骤 3: 获取票价信息...")
-            val performance = concertDetail.performations.firstOrNull { 
+            val performance = concertDetail.performances.firstOrNull { 
                 it.date.contains(task.grabDate) 
-            } ?: concertDetail.performations.first()
+            } ?: concertDetail.performances.first()
             
             val priceInfo = apiClient.getPriceInfo(concert.concertId, performance.performanceId)
             

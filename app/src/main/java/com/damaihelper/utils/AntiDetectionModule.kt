@@ -206,25 +206,6 @@ class AntiDetectionModule(private val context: Context) {
         return userAgents[random.nextInt(userAgents.size)]
     }
 
-    /**
-     * 生成随机的HTTP请求头
-     * @return HTTP请求头Map
-     */
-    fun generateRandomHeaders(): Map<String, String> {
-        return mapOf(
-            "User-Agent" to generateRandomUserAgent(),
-            "Accept-Language" to generateRandomLanguage(),
-            "Accept-Encoding" to "gzip, deflate",
-            "Accept" to "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
-            "Connection" to "keep-alive",
-            "Upgrade-Insecure-Requests" to "1",
-            "DNT" to "1",
-            "Cache-Control" to "max-age=0",
-            "Referer" to generateRandomReferer()
-        )
-    }
-
-    /**
      * 生成随机的语言
      * @return 随机的语言代码
      */

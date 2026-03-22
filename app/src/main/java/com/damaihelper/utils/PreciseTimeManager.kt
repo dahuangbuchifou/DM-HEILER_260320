@@ -146,4 +146,17 @@ object PreciseTimeManager {
      * 获取时间偏移量
      */
     fun getOffset(): Long = localOffset
+
+    /**
+     * 精确等待到目标时间（简化版本）
+     * @param targetTime 目标时间戳（毫秒）
+     */
+    suspend fun waitForMillis(targetTime: Long) {
+        waitUntilPreciseTime(targetTime)
+    }
+
+    /**
+     * 获取时间同步状态
+     */
+    fun getTimeSyncStatus(): Boolean = isSynced
 }
