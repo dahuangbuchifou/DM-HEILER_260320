@@ -169,8 +169,7 @@ class APIGrabbingStrategy(private val context: Context) : TicketGrabbingStrategy
         }
         
         // 3. 检查时间同步
-        val timeSyncStatus = PreciseTimeManager.getTimeSyncStatus()
-        if (!timeSyncStatus.isSynchronized) {
+        if (!PreciseTimeManager.isSynchronized()) {
             Log.w(TAG, "⚠️ 时间未同步，可能影响抢票精度")
             // 不阻止抢票，但记录警告
         }
@@ -231,7 +230,7 @@ class APIGrabbingStrategy(private val context: Context) : TicketGrabbingStrategy
                 price.price.toString().contains(task.ticketPriceKeyword) ||
                 price.name.contains(task.ticketPriceKeyword)
             } ?: priceInfo.prices.minByOrNull { 
-                kotlin.math.abs(it.price - task.ticketPriceKeyword.toDoubleOrNull() ?: 0.0) 
+                kotlin.math.abs(it.price - (task.ticketPriceKeyword.toDoubleOrNull() ?: 0.0)) 
             }
             
             if (targetPrice == null) {

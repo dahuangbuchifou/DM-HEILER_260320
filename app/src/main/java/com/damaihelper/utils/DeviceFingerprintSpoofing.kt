@@ -29,6 +29,7 @@ class DeviceFingerprintSpoofing(private val context: Context) {
         val screenDensity: String,
         val cpuAbi: String,
         val userAgent: String,
+        val language: String,  // 添加语言字段
         val imei: String,
         val imsi: String,
         val phoneNumber: String,
@@ -61,6 +62,7 @@ class DeviceFingerprintSpoofing(private val context: Context) {
             screenDensity = generateRandomScreenDensity(),
             cpuAbi = generateRandomCpuAbi(),
             userAgent = generateRandomUserAgent(),
+            language = generateRandomLanguage(),
             imei = generateRandomImei(),
             imsi = generateRandomImsi(),
             phoneNumber = generateRandomPhoneNumber(),
@@ -199,6 +201,21 @@ class DeviceFingerprintSpoofing(private val context: Context) {
             "Mozilla/5.0 (Linux; Android 13; ONEPLUS A6013) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.120 Mobile Safari/537.36"
         )
         return userAgents[random.nextInt(userAgents.size)]
+    }
+
+    /**
+     * 生成随机的语言
+     * @return 随机的语言代码
+     */
+    private fun generateRandomLanguage(): String {
+        val languages = listOf(
+            "zh-CN,zh;q=0.9",
+            "zh-CN,zh;q=0.9,en;q=0.8",
+            "zh-CN,zh;q=0.9,en-US;q=0.8",
+            "en-US,en;q=0.9",
+            "en-US,en;q=0.9,zh-CN;q=0.8"
+        )
+        return languages[random.nextInt(languages.size)]
     }
 
     /**

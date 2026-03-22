@@ -126,44 +126,6 @@ class UIAutomationStrategy(private val context: Context) : TicketGrabbingStrateg
 }
 
 /**
- * API抢票策略
- */
-class APIGrabbingStrategy(private val context: Context) : TicketGrabbingStrategy {
-    override val name: String = "API抢票"
-    override val priority: Int = 80
-
-    private var status = StrategyStatus(name = name, isAvailable = true)
-
-    override suspend fun grab(context: Context, task: TicketTask): GrabbingResult {
-        return try {
-            // TODO: 实现API抢票逻辑
-            // 这里应该调用DamaiApiClient中的抢票方法
-            GrabbingResult(
-                success = true,
-                message = "API抢票成功",
-                retryable = false
-            )
-        } catch (e: Exception) {
-            GrabbingResult(
-                success = false,
-                message = "API抢票失败: ${e.message}",
-                errorCode = 2001,
-                retryable = true,
-                suggestedNextStrategy = "UI自动化"
-            )
-        }
-    }
-
-    override suspend fun isAvailable(context: Context): Boolean {
-        // TODO: 检查API登录状态
-        return true
-    }
-
-    override fun getStatus(): StrategyStatus {
-        return status
-    }
-}
-
 /**
  * 混合模式抢票策略
  * 结合API和UI自动化的优势

@@ -8,6 +8,8 @@ import android.util.Log
 import android.view.accessibility.AccessibilityNodeInfo
 import kotlinx.coroutines.delay
 import kotlin.math.abs
+import kotlin.math.cos
+import kotlin.math.ln
 import kotlin.math.pow
 import kotlin.math.sqrt
 import kotlin.random.Random
@@ -197,8 +199,8 @@ class HumanBehaviorSimulator {
 
             for (i in 1 until pointCount) {
                 // 添加随机扰动（高斯分布）
-                val perturbationX = random.nextGaussian() * 20
-                val perturbationY = random.nextGaussian() * 20
+                val perturbationX = (random.nextGaussian() * 20).toFloat()
+                val perturbationY = (random.nextGaussian() * 20).toFloat()
                 
                 currentX += dx + perturbationX
                 currentY += dy + perturbationY
