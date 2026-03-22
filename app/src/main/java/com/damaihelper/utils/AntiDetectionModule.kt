@@ -8,7 +8,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.ConnectionSpec
 import okhttp3.OkHttpClient
-import java.security.SecureRandom
 import java.util.concurrent.TimeUnit
 import kotlin.random.Random
 
@@ -34,7 +33,7 @@ class AntiDetectionModule(private val context: Context) {
         private const val MAX_REQUEST_INTERVAL_MS = 200L
     }
 
-    private val random = SecureRandom() // 使用更安全的随机数生成器
+    private val random = Random(System.currentTimeMillis()) // 使用 Kotlin Random（支持范围参数）
     private val deviceFingerprintSpoofing = DeviceFingerprintSpoofing(context)
     private var lastFingerprintRotationTime = 0L
     private var currentFingerprint: DeviceFingerprintSpoofing.DeviceFingerprint? = null
@@ -303,14 +302,10 @@ class AntiDetectionModule(private val context: Context) {
         // 检查是否需要轮换指纹
         maybeRotateFingerprint()
         
+        // 使用已缓存的指纹，或生成新的
         val fingerprint = currentFingerprint ?: run {
-            val ua = generateRandomUserAgent()
-            DeviceFingerprintSpoofing.DeviceFingerprint(
-                userAgent = ua,
-                deviceId = generateRandomDeviceId(),
-                platform = "Android",
-                language = generateRandomLanguage()
-            )
+            Log.d(TAG, "生成新设备指纹...")
+            deviceFingerprintSpoofing.generateSpoofedFingerprint()
         }
         
         mapOf(

@@ -7,10 +7,10 @@ import android.graphics.Rect
 import android.util.Log
 import android.view.accessibility.AccessibilityNodeInfo
 import kotlinx.coroutines.delay
-import java.security.SecureRandom
 import kotlin.math.abs
 import kotlin.math.pow
 import kotlin.math.sqrt
+import kotlin.random.Random
 
 /**
  * 人类行为模拟器 - 增强版
@@ -26,7 +26,7 @@ import kotlin.math.sqrt
  */
 class HumanBehaviorSimulator {
     private val TAG = "HumanBehavior"
-    private val random = SecureRandom() // 使用加密级随机数
+    private val random = Random(System.currentTimeMillis()) // 使用 Kotlin Random（支持范围参数）
 
     companion object {
         // A1: 随机点击偏移范围（像素）
@@ -336,9 +336,8 @@ class HumanBehaviorSimulator {
         delayBetweenChars: LongRange = 50L..200L
     ): Boolean {
         return try {
-            val clipboard = android.content.ClipboardManager(
-                android.content.Context.CLIPBOARD_SERVICE
-            )
+            // ClipboardManager 需要通过 Context.getSystemService 获取，此处简化处理
+            // 实际使用 ACTION_SET_TEXT 直接输入文本
             
             // 模拟人类打字：逐个字符输入（可选）
             // 或使用剪贴板快速粘贴
@@ -397,10 +396,10 @@ class HumanBehaviorSimulator {
     /**
      * 生成高斯分布的随机数（更符合人类行为）
      */
-    private fun SecureRandom.nextGaussian(): Double {
+    private fun Random.nextGaussian(): Double {
         // Box-Muller 变换
         val u1 = nextDouble()
         val u2 = nextDouble()
-        return sqrt(-2.0 * ln(u1)) * cos(2.0 * Math.PI * u2)
+        return sqrt(-2.0 * kotlin.math.ln(u1)) * cos(2.0 * Math.PI * u2)
     }
 }
