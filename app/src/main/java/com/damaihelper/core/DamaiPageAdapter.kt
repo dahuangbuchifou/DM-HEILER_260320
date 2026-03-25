@@ -18,6 +18,8 @@ enum class DamaiPageType(val description: String) {
     UNKNOWN("未知页面"),
     HOME("首页"),
     DETAIL("演出详情页"),
+    TICKET_SELECTION("票档选择页"),      // 🆕 新增：选择票档页面
+    CONFIRM("确认购买页"),              // 🆕 新增：确认订单页面
     QUEUING("排队页"),
     SELECTING("选票页"),
     CONFIRMING("订单确认页"),
@@ -102,6 +104,26 @@ class DamaiPageAdapter(private val service: AccessibilityService) {
             // 获取页面文本特征
             val pageText = getPageText(rootNode)
             
+            // 🆕 检查票档选择页特征（步骤 2）
+            if (pageText.contains("票档", ignoreCase = true) ||
+                pageText.contains("看台", ignoreCase = true) ||
+                pageText.contains("内场", ignoreCase = true) ||
+                (pageText.contains("元") && findNodeByText(rootNode, "确定") != null)
+            ) {
+                markers.add("票档选择关键词")
+                scores[DamaiPageType.TICKET_SELECTION] = 0.9f
+            }
+            
+            // 🆕 检查确认购买页特征（步骤 3）
+            if (pageText.contains("确认购买", ignoreCase = true) ||
+                pageText.contains("实名观演人", ignoreCase = true) ||
+                pageText.contains("配送方式", ignoreCase = true) ||
+                findNodeByText(rootNode, "立即提交") != null
+            ) {
+                markers.add("确认购买页关键词")
+                scores[DamaiPageType.CONFIRM] = 0.95f
+            }
+            
             // 检查排队特征
             if (pageText.contains(TEXT_QUEUING, ignoreCase = true) ||
                 pageText.contains("前方排队", ignoreCase = true) ||
@@ -121,7 +143,7 @@ class DamaiPageAdapter(private val service: AccessibilityService) {
                 scores[DamaiPageType.SELECTING] = 0.85f
             }
 
-            // 检查确认页特征
+            // 检查订单确认页特征（老逻辑，保留兼容）
             if (pageText.contains(TEXT_CONFIRM_ORDER, ignoreCase = true) ||
                 pageText.contains("订单确认", ignoreCase = true) ||
                 findNodeByText(rootNode, TEXT_SUBMIT_ORDER) != null
