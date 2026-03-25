@@ -841,4 +841,85 @@ class TicketGrabbingAccessibilityService : AccessibilityService() {
             }
         }
     }
+
+    // ==================== 🆕 新增：3 步自动抢票流程 ====================
+
+    /**
+     * 🆕 执行 3 步自动抢票流程
+     */
+    suspend fun executeAutoGrabbing(task: TicketTask): Boolean {
+        Log.i(TAG, "========== 开始执行 3 步自动抢票 ==========")
+        
+        try {
+            // 步骤 1：点击"立即预订"
+            Log.i(TAG, "【步骤 1/3】点击立即预订")
+            if (!step1_ClickBuyNow()) {
+                Log.e(TAG, "❌ 步骤 1 失败")
+                return false
+            }
+            delay(1000)
+
+            // 步骤 2：选择最贵票档并确认
+            Log.i(TAG, "【步骤 2/3】选择最贵票档")
+            if (!step2_SelectMostExpensiveTicket(task.selectedPrice)) {
+                Log.e(TAG, "❌ 步骤 2 失败")
+                return false
+            }
+            delay(1000)
+
+            // 步骤 3：选择观演人并提交订单
+            Log.i(TAG, "【步骤 3/3】选择观演人并提交")
+            if (!step3_SelectAudienceAndSubmit(task)) {
+                Log.e(TAG, "❌ 步骤 3 失败")
+                return false
+            }
+
+            Log.i(TAG, "========== 自动抢票完成 ==========")
+            return true
+
+        } catch (e: Exception) {
+            Log.e(TAG, "自动抢票异常", e)
+            return false
+        }
+    }
+
+    private suspend fun step1_ClickBuyNow(): Boolean {
+        val rootNode = rootInActiveWindow ?: return false
+        val node = rootNode.findAccessibilityNodeInfosByText("立即预订").firstOrNull() 
+            ?: rootNode.findAccessibilityNodeInfosByText("立即购买").firstOrNull()
+            ?: return false
+        node.performAction(AccessibilityNodeInfo.ACTION_CLICK)
+        Log.i(TAG, "✅ 步骤 1 完成")
+        return true
+    }
+
+    private suspend fun step2_SelectMostExpensiveTicket(preferredPrice: String): Boolean {
+        val rootNode = rootInActiveWindow ?: return false
+        
+        if (preferredPrice.isNotEmpty()) {
+            val node = rootNode.findAccessibilityNodeInfosByText(preferredPrice).firstOrNull()
+            node?.performAction(AccessibilityNodeInfo.ACTION_CLICK)
+            delay(300)
+        }
+        
+        val confirmNode = rootNode.findAccessibilityNodeInfosByText("确定").firstOrNull() ?: return false
+        confirmNode.performAction(AccessibilityNodeInfo.ACTION_CLICK)
+        Log.i(TAG, "✅ 步骤 2 完成")
+        return true
+    }
+
+    private suspend fun step3_SelectAudienceAndSubmit(task: TicketTask): Boolean {
+        val rootNode = rootInActiveWindow ?: return false
+        
+        val audienceName = task.audienceName.ifEmpty { "张健夫" }
+        val audienceNode = rootNode.findAccessibilityNodeInfosByText(audienceName).firstOrNull()
+        audienceNode?.performAction(AccessibilityNodeInfo.ACTION_CLICK)
+        delay(300)
+        
+        val submitNode = rootNode.findAccessibilityNodeInfosByText("立即提交").firstOrNull() ?: return false
+        submitNode.performAction(AccessibilityNodeInfo.ACTION_CLICK)
+        Log.i(TAG, "✅ 步骤 3 完成：订单已提交")
+        return true
+    }
+
 }
