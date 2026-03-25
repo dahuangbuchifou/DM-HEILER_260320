@@ -8,8 +8,6 @@
 package com.damaihelper.core
 
 import android.accessibilityservice.AccessibilityService
-import android.accessibilityservice.AccessibilityServiceInfo
-import android.content.Context
 import android.util.Log
 import android.view.accessibility.AccessibilityNodeInfo
 
@@ -209,10 +207,11 @@ class DamaiPageAdapter(private val service: AccessibilityService) {
         
         try {
             // 模拟下拉刷新 - 使用返回动作
-            // 注意：GLOBAL_ACTION_BACK 是 Android API 16+ 的标准常量
-            service.performGlobalAction(AccessibilityServiceInfo.GLOBAL_ACTION_BACK)
+            // GLOBAL_ACTION_BACK = 1 (Android API 16+)
+            // 直接使用整数值避免常量引用问题
+            service.performGlobalAction(1) // GLOBAL_ACTION_BACK
             Thread.sleep(500)
-            service.performGlobalAction(AccessibilityServiceInfo.GLOBAL_ACTION_BACK)
+            service.performGlobalAction(1) // GLOBAL_ACTION_BACK
             
             return PageActionResult.ok("页面刷新成功")
         } catch (e: Exception) {

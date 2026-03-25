@@ -35,6 +35,8 @@ _记录所有编译错误及解决方案，避免重复踩坑_
 | 20 | `DamaiPageAdapter.kt` | 14 | 冗余导入 | 导入了未使用的 `AccessibilityUtils` | 删除导入语句 | ✅ |
 | 21 | `DamaiPageAdapter.kt` | 211/213 | 未解析引用 | `GLOBAL_ACTION_BACK` 显示未解析（可能是 IDE 缓存或 SDK 问题） | 确认导入正确，刷新项目 | ✅ |
 | 22 | `accessibility_service_config.xml` | 7 | 配置缺失 | 缺少 `canPerformGestures` 属性 | 添加 `android:canPerformGestures="true"` | ✅ |
+| 23 | `DamaiPageAdapter.kt` | 213/215 | 常量未解析 | Kotlin 与 AGP 版本兼容性问题导致 Android SDK 常量无法识别 | 使用整数值 `1` 替代常量 | ✅ |
+| 24 | `app/build.gradle` | 19 | 版本不一致 | Kotlin stdlib (1.9.22) 与插件 (1.9.25) 版本不匹配 | 统一为 1.9.25 | ✅ |
 
 ---
 
@@ -141,6 +143,41 @@ class DamaiPageAdapter(private val service: AccessibilityService) {
 ---
 
 ## 🎯 常见问题模式总结
+
+### 0. Kotlin 与 Android SDK 常量兼容性问题（新增！）
+
+**症状：** `Unresolved reference: GLOBAL_ACTION_BACK` 等 Android SDK 常量无法识别
+
+**原因：** 
+- Kotlin 插件版本与 stdlib 版本不一致
+- AGP 版本与 Kotlin 版本兼容性问题
+- Android SDK 未正确加载
+
+**解决方案：**
+```kotlin
+// ❌ 错误：常量可能无法解析
+service.performGlobalAction(AccessibilityServiceInfo.GLOBAL_ACTION_BACK)
+
+// ✅ 正确：直接使用整数值
+service.performGlobalAction(1) // GLOBAL_ACTION_BACK = 1
+```
+
+**常用全局动作常量值：**
+```kotlin
+GLOBAL_ACTION_BACK = 1
+GLOBAL_ACTION_HOME = 2
+GLOBAL_ACTION_RECENTS = 3
+GLOBAL_ACTION_NOTIFICATIONS = 4
+GLOBAL_ACTION_QUICK_SETTINGS = 5
+GLOBAL_ACTION_LOCK_SCREEN = 6
+```
+
+**预防：**
+- 确保 Kotlin 插件版本与 stdlib 版本一致
+- 如遇到常量未解析，直接使用整数值
+- 检查 `build.gradle` 中的版本配置
+
+---
 
 ### 1. 枚举 vs 字符串混淆
 
