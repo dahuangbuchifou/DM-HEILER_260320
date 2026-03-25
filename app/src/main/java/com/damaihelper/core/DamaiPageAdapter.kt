@@ -211,9 +211,9 @@ class DamaiPageAdapter(private val service: AccessibilityService) {
         
         try {
             // 模拟下拉刷新
-            AccessibilityUtils.performGlobalAction(service, AccessibilityServiceInfo.GLOBAL_ACTION_BACK)
+            service.performGlobalAction(AccessibilityServiceInfo.GLOBAL_ACTION_BACK)
             Thread.sleep(500)
-            AccessibilityUtils.performGlobalAction(service, AccessibilityServiceInfo.GLOBAL_ACTION_BACK)
+            service.performGlobalAction(AccessibilityServiceInfo.GLOBAL_ACTION_BACK)
             
             return PageActionResult.ok("页面刷新成功")
         } catch (e: Exception) {

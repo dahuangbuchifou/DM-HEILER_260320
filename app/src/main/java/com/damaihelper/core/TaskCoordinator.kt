@@ -306,28 +306,28 @@ class TaskCoordinator(
                 val pageType = pageAdapter?.detectPageType()
                 
                 when (pageType) {
-                    "QUEUING" -> {
+                    DamaiPageType.QUEUING -> {
                         if (currentState != TaskState.QUEUING) {
                             stateMachine.transitionTo(taskId, TaskState.QUEUING, "检测到排队页面")
                             notificationManager?.notifyInfo("进入排队页面")
                         }
                     }
-                    "SELECTING" -> {
+                    DamaiPageType.SELECTING -> {
                         if (currentState != TaskState.SELECTING) {
                             stateMachine.transitionTo(taskId, TaskState.SELECTING, "检测到选票页面")
                             notificationManager?.notifyInfo("可以选座了！")
                         }
                     }
-                    "CONFIRMING" -> {
+                    DamaiPageType.CONFIRMING -> {
                         if (currentState != TaskState.CONFIRMING) {
                             stateMachine.transitionTo(taskId, TaskState.CONFIRMING, "检测到确认页面")
                             notificationManager?.notifyCritical("进入订单确认页，请快速确认！")
                         }
                     }
-                    "CAPTCHA" -> {
+                    DamaiPageType.CAPTCHA -> {
                         stateMachine.handleError(taskId, ErrorType.RISK_CHALLENGE, "检测到验证码")
                     }
-                    "ERROR" -> {
+                    DamaiPageType.ERROR -> {
                         stateMachine.handleError(taskId, ErrorType.PAGE_ERROR, "页面异常")
                     }
                     else -> {
