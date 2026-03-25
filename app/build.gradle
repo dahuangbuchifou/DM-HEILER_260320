@@ -10,7 +10,7 @@
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
-    id("kotlin-kapt")
+    id("kotlin-kapt")  // ✅ 启用 kapt 以支持 Room 注解
     id("kotlin-parcelize")
 }
 
@@ -60,7 +60,7 @@ dependencies {
     implementation("com.google.android.material:material:1.11.0")
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
 
-    // Room Database (直接写版本号，避免变量问题)
+    // Room Database ✅ 启用
     implementation("androidx.room:room-runtime:2.6.1")
     implementation("androidx.room:room-ktx:2.6.1")
     kapt("androidx.room:room-compiler:2.6.1")

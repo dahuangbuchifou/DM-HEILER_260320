@@ -126,7 +126,6 @@ class UIAutomationStrategy(private val context: Context) : TicketGrabbingStrateg
 }
 
 /**
-/**
  * 混合模式抢票策略
  * 结合API和UI自动化的优势
  */
@@ -177,4 +176,3 @@ class HybridGrabbingStrategy(private val context: Context) : TicketGrabbingStrat
         return status
     }
 }
-
