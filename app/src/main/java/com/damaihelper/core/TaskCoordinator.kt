@@ -68,7 +68,7 @@ class TaskCoordinator(
         // 记录任务启动事件
         observabilityService?.recordEvent(
             taskId = task.id,
-            eventType = "TASK_START",
+            eventType = EventType.TASK_START,
             message = "任务启动：${task.name}"
         )
         
@@ -100,7 +100,7 @@ class TaskCoordinator(
         
         observabilityService?.recordEvent(
             taskId = taskId,
-            eventType = "TASK_STOP",
+            eventType = EventType.TASK_STOP,
             message = reason
         )
     }
@@ -210,7 +210,7 @@ class TaskCoordinator(
             Log.d(TAG, "预检查 [$name]: ${if (passed) "✓" else "✗"}")
             observabilityService?.recordEvent(
                 taskId = task.id,
-                eventType = "PRECHECK_ITEM",
+                eventType = EventType.PRECHECK_ITEM,
                 message = "检查项：$name - ${if (passed) "通过" else "失败"}"
             )
         }
@@ -257,7 +257,7 @@ class TaskCoordinator(
                 Log.d(TAG, "心跳检查：剩余 ${remainingSeconds} 秒")
                 observabilityService?.recordEvent(
                     taskId = task.id,
-                    eventType = "HEARTBEAT",
+                    eventType = EventType.HEARTBEAT,
                     message = "等待开票，剩余 ${remainingSeconds} 秒"
                 )
             }
@@ -387,7 +387,7 @@ class TaskCoordinator(
         
         observabilityService?.recordEvent(
             taskId = taskId,
-            eventType = "USER_TAKEOVER",
+            eventType = EventType.USER_TAKEOVER,
             message = "用户操作：$action"
         )
     }

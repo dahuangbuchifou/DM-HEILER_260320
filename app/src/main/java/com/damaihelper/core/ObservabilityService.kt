@@ -484,13 +484,14 @@ class ObservabilityService(private val context: Context) {
         val activeRuns = taskRuns.count { it.value.endTime == null }
         val totalEvents = eventLogs.values.sumOf { it.size }
         val totalSnapshots = snapshotPaths.values.sumOf { it.size }
+        val logFileCount = logDir.listFiles()?.size ?: 0
         
         return mapOf(
             "totalRuns" to totalRuns,
             "activeRuns" to activeRuns,
             "totalEvents" to totalEvents,
             "totalSnapshots" to totalSnapshots,
-            "logDirSize" to logDir.size()
+            "logFileCount" to logFileCount
         )
     }
 }

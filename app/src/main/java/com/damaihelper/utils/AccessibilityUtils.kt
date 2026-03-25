@@ -3,11 +3,14 @@
 // 🔧 修复内容：
 //   - 增强服务状态检测容错
 //   - 添加详细日志输出（便于调试）
+//   - 添加 performGlobalAction 方法
 // 📝 说明：无障碍工具类 - 检测服务启用状态
 // ============================================================================
 
 package com.damaihelper.utils
 
+import android.accessibilityservice.AccessibilityService
+import android.accessibilityservice.AccessibilityServiceInfo
 import android.content.Context
 import android.provider.Settings
 import android.text.TextUtils
@@ -28,8 +31,8 @@ object AccessibilityUtils {
         val serviceName = "${context.packageName}/com.damaihelper.service.TicketGrabbingAccessibilityService"
 
         Log.d(TAG, "检查无障碍服务状态")
-        Log.d(TAG, "包名: ${context.packageName}")
-        Log.d(TAG, "服务名: $serviceName")
+        Log.d(TAG, "包名：${context.packageName}")
+        Log.d(TAG, "服务名：$serviceName")
 
         try {
             // 获取已启用的无障碍服务列表
@@ -38,7 +41,7 @@ object AccessibilityUtils {
                 Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
             )
 
-            Log.d(TAG, "已启用的无障碍服务: $enabledServices")
+            Log.d(TAG, "已启用的无障碍服务：$enabledServices")
 
             // 检查服务列表
             if (enabledServices.isNullOrEmpty()) {
@@ -49,7 +52,7 @@ object AccessibilityUtils {
             // 分割服务列表并检查
             val servicesList = enabledServices.split(":")
             for (service in servicesList) {
-                Log.d(TAG, "检查服务: $service")
+                Log.d(TAG, "检查服务：$service")
 
                 // 完全匹配或部分匹配
                 if (service.equals(serviceName, ignoreCase = true) ||
@@ -75,7 +78,7 @@ object AccessibilityUtils {
         val instance = com.damaihelper.service.TicketGrabbingAccessibilityService.getInstance()
         val isRunning = instance != null
 
-        Log.d(TAG, "服务实例检查: ${if (isRunning) "运行中" else "未运行"}")
+        Log.d(TAG, "服务实例检查：${if (isRunning) "运行中" else "未运行"}")
         return isRunning
     }
 
@@ -94,11 +97,18 @@ object AccessibilityUtils {
 
         return buildString {
             appendLine("=== 无障碍服务状态 ===")
-            appendLine("服务名称: $serviceName")
-            appendLine("已启用列表: $enabledServices")
-            appendLine("是否启用: $isEnabled")
-            appendLine("是否运行: $isRunning")
+            appendLine("服务名称：$serviceName")
+            appendLine("已启用列表：$enabledServices")
+            appendLine("是否启用：$isEnabled")
+            appendLine("是否运行：$isRunning")
             appendLine("=====================")
         }
+    }
+
+    /**
+     * 执行全局无障碍动作
+     */
+    fun performGlobalAction(service: AccessibilityService, action: Int): Boolean {
+        return service.performGlobalAction(action)
     }
 }
