@@ -31,6 +31,8 @@ _记录所有编译错误及解决方案，避免重复踩坑_
 | 16 | `DamaiPageAdapter.kt` | 214 | 未解析引用 | `GLOBAL_ACTION_BACK` 通过 AccessibilityUtils 调用 | 直接用 `service.performGlobalAction()` | ✅ |
 | 17 | `DamaiPageAdapter.kt` | 216 | 未解析引用 | `GLOBAL_ACTION_BACK` 通过 AccessibilityUtils 调用 | 直接用 `service.performGlobalAction()` | ✅ |
 | 18 | `DamaiPageAdapter.kt` | 214 | Receiver 类型不匹配 | `AccessibilityUtils.performGlobalAction()` 参数类型错误 | 直接调用 service 方法 | ✅ |
+| 19 | `DamaiPageAdapter.kt` | 80 | 对象实例化错误 | `AccessibilityUtils` 是 Kotlin `object` 不能实例化 | 删除 `accessibilityUtils` 字段 | ✅ |
+| 20 | `DamaiPageAdapter.kt` | 14 | 冗余导入 | 导入了未使用的 `AccessibilityUtils` | 删除导入语句 | ✅ |
 
 ---
 

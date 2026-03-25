@@ -11,7 +11,6 @@ import android.accessibilityservice.AccessibilityService
 import android.accessibilityservice.AccessibilityServiceInfo
 import android.util.Log
 import android.view.accessibility.AccessibilityNodeInfo
-import com.damaihelper.utils.AccessibilityUtils
 
 /**
  * 页面类型枚举
@@ -76,8 +75,6 @@ class DamaiPageAdapter(private val service: AccessibilityService) {
         const val TEXT_CAPTCHA = "验证码"
         const val TEXT_RISK_CHECK = "安全验证"
     }
-
-    private val accessibilityUtils = AccessibilityUtils(service)
 
     /**
      * 检测当前页面类型
