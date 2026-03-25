@@ -9,6 +9,7 @@ package com.damaihelper.core
 
 import android.accessibilityservice.AccessibilityService
 import android.accessibilityservice.AccessibilityServiceInfo
+import android.content.Context
 import android.util.Log
 import android.view.accessibility.AccessibilityNodeInfo
 
@@ -207,7 +208,8 @@ class DamaiPageAdapter(private val service: AccessibilityService) {
         Log.d(TAG, "刷新页面")
         
         try {
-            // 模拟下拉刷新
+            // 模拟下拉刷新 - 使用返回动作
+            // 注意：GLOBAL_ACTION_BACK 是 Android API 16+ 的标准常量
             service.performGlobalAction(AccessibilityServiceInfo.GLOBAL_ACTION_BACK)
             Thread.sleep(500)
             service.performGlobalAction(AccessibilityServiceInfo.GLOBAL_ACTION_BACK)

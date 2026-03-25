@@ -33,6 +33,8 @@ _记录所有编译错误及解决方案，避免重复踩坑_
 | 18 | `DamaiPageAdapter.kt` | 214 | Receiver 类型不匹配 | `AccessibilityUtils.performGlobalAction()` 参数类型错误 | 直接调用 service 方法 | ✅ |
 | 19 | `DamaiPageAdapter.kt` | 80 | 对象实例化错误 | `AccessibilityUtils` 是 Kotlin `object` 不能实例化 | 删除 `accessibilityUtils` 字段 | ✅ |
 | 20 | `DamaiPageAdapter.kt` | 14 | 冗余导入 | 导入了未使用的 `AccessibilityUtils` | 删除导入语句 | ✅ |
+| 21 | `DamaiPageAdapter.kt` | 211/213 | 未解析引用 | `GLOBAL_ACTION_BACK` 显示未解析（可能是 IDE 缓存或 SDK 问题） | 确认导入正确，刷新项目 | ✅ |
+| 22 | `accessibility_service_config.xml` | 7 | 配置缺失 | 缺少 `canPerformGestures` 属性 | 添加 `android:canPerformGestures="true"` | ✅ |
 
 ---
 
