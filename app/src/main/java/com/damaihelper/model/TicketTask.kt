@@ -3,6 +3,8 @@
 // 🔧 修复内容：
 //   - 确认 grabTime 为 Long 类型（避免类型转换错误）
 //   - 添加 quantity 字段（用于票数）
+//   - 添加 audienceName 字段（用于自动选择观演人）
+//   - 添加 selectedPrice 字段（用于存储选中的票价）
 // 📝 说明：抢票任务数据模型 - Room 数据库实体
 // ============================================================================
 
@@ -31,16 +33,22 @@ data class TicketTask(
     // 抢票时间戳（毫秒）- ✅ 修复：改为 Long 类型
     val grabTime: Long,
 
-    // 票价关键词（如："380元"）
+    // 票价关键词（如："380 元"）
     val ticketPriceKeyword: String,
 
     // 票数
     val count: Int = 1,
 
-    // 观演人姓名（逗号分隔，如："张三,李四"）
+    // 观演人姓名（逗号分隔，如："张三，李四"）
     val viewerNames: String,
 
-    // 任务状态（0: 未开始, 1: 进行中, 2: 已完成, 3: 失败）
+    // 观演人姓名（用于自动选择，单个姓名）
+    val audienceName: String = "",
+
+    // 选中的票价（用于步骤 2 选择票档）
+    val selectedPrice: String = "",
+
+    // 任务状态（0: 未开始，1: 进行中，2: 已完成，3: 失败）
     val status: String = "空闲",
 
     // 创建时间
