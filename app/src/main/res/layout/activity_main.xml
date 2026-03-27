@@ -11,7 +11,7 @@
         android:id="@+id/version_update_time_text"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="📅 版本更新时间：2026-03-26 20:40"
+        android:text="📅 版本更新时间：2026-03-27 21:55"
         android:textSize="14sp"
         android:textColor="#FF9800"
         android:textStyle="bold"
@@ -19,6 +19,18 @@
         android:padding="8dp"
         android:background="#FFF3E0"
         android:layout_marginBottom="12dp"/>
+
+    <!-- 从预售页抓取按钮 -->
+    <Button
+        android:id="@+id/btnExtractFromPreSale"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:text="📸 从预售页抓取信息"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:textColor="@android:color/white"
+        android:background="@drawable/button_primary"
+        android:layout_marginBottom="8dp"/>
 
     <!-- 无障碍服务状态 -->
     <TextView
@@ -77,7 +89,9 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:layout_marginBottom="16dp"/>
+        android:layout_marginBottom="16dp"
+        android:overScrollMode="always"
+        android:fillViewport="true"/>
 
     <!-- 添加任务按钮 -->
     <Button

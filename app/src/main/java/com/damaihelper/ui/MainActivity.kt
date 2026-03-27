@@ -22,6 +22,10 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.damaihelper.R
 import com.damaihelper.model.ConcertInfo
+import com.damaihelper.core.ScreenCaptureService
+import com.damaihelper.core.ScreenAnalyzer
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import com.damaihelper.model.TaskDatabase
 import com.damaihelper.model.TicketTask
 import kotlinx.coroutines.launch
@@ -47,6 +51,11 @@ class MainActivity : AppCompatActivity() {
 
     // ✅ 新增：抓取演出信息按钮
     private lateinit var extractConcertInfoButton: Button
+    private lateinit var btnExtractFromPreSale: Button
+    
+    // 截屏和识别服务
+    private var screenCapture: ScreenCaptureService? = null
+    private var screenAnalyzer: ScreenAnalyzer? = null
 
     // ✅ 新增：广播接收器
     private lateinit var concertInfoReceiver: BroadcastReceiver
@@ -64,6 +73,11 @@ class MainActivity : AppCompatActivity() {
 
         // ✅ 新增：初始化抓取按钮
         extractConcertInfoButton = findViewById(R.id.btnExtractConcertInfo)
+        btnExtractFromPreSale = findViewById(R.id.btnExtractFromPreSale)
+        
+        // 初始化截屏和识别服务
+        screenCapture = ScreenCaptureService(this)
+        screenAnalyzer = ScreenAnalyzer()
 
         // ✅ 设置版本更新时间
         updateVersionTime()
@@ -141,7 +155,7 @@ class MainActivity : AppCompatActivity() {
      */
     private fun updateVersionTime() {
         // 格式：2026-03-27 20:45
-        versionUpdateTimeText.text = "📅 版本更新时间：2026-03-27 21:25"
+        versionUpdateTimeText.text = "📅 版本更新时间：2026-03-27 21:55"
     }
 
     private fun setupListeners() {
@@ -158,6 +172,11 @@ class MainActivity : AppCompatActivity() {
         // ✅ 新增：抓取演出信息按钮监听
         extractConcertInfoButton.setOnClickListener {
             handleExtractConcertInfo()
+        }
+        
+        // 从预售页抓取按钮监听
+        btnExtractFromPreSale.setOnClickListener {
+            handleExtractFromPreSalePage()
         }
     }
 
@@ -302,6 +321,25 @@ class MainActivity : AppCompatActivity() {
             apply()
         }
         Log.i(TAG, "演出信息已保存到 SharedPreferences")
+    }
+
+    /**
+     * 从预售页抓取信息
+     */
+    private fun handleExtractFromPreSalePage() {
+        Toast.makeText(this, "📸 正在截屏识别...", Toast.LENGTH_SHORT).show()
+        
+        lifecycleScope.launch {
+            try {
+                // 请求截屏权限
+                screenCapture?.requestPermission(this@MainActivity)
+                // 注意：实际需要在 onActivityResult 中处理结果
+                Toast.makeText(this@MainActivity, "⚠️ 请在授权后使用", Toast.LENGTH_LONG).show()
+            } catch (e: Exception) {
+                Log.e(TAG, "预售页抓取失败", e)
+                Toast.makeText(this@MainActivity, "❌ 抓取失败：${e.message}", Toast.LENGTH_LONG).show()
+            }
+        }
     }
 
     /**

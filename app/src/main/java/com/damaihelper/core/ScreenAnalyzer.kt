@@ -177,6 +177,83 @@ class ScreenAnalyzer {
     }
 
     /**
+     * 从大麦预售页面提取演出信息
+     * @return ExtractedConcertInfo 包含演出名、价格、时间等
+     */
+    suspend fun extractConcertInfoFromPreSalePage(bitmap: Bitmap): ExtractedConcertInfo? {
+        try {
+            val textBlocks = recognizeText(bitmap)
+            val allText = textBlocks.joinToString("\n") { it.text }
+            
+            Log.i(TAG, "📝 识别到的文字：\n$allText")
+            
+            // 1. 提取演出名称（包含【】或「」的文字）
+            var concertName = ""
+            val namePatterns = listOf(
+                Regex("【[^】]*】[^\\n]+"),
+                Regex("「[^」]*」[^\\n]+"),
+                Regex("\\d{4} 巡演[^\\n]+")
+            )
+            
+            for (pattern in namePatterns) {
+                val match = pattern.find(allText)
+                if (match != null) {
+                    concertName = match.value.trim()
+                    break
+                }
+            }
+            
+            // 2. 提取价格区间
+            var priceRange = ""
+            val pricePattern = Regex("¥?(\\d+)[-~至](\\d+)")
+            val priceMatch = pricePattern.find(allText)
+            if (priceMatch != null) {
+                priceRange = "${priceMatch.groupValues[1]}-${priceMatch.groupValues[2]}元"
+            }
+            
+            // 3. 提取开抢时间
+            var grabTime = ""
+            val timePattern = Regex("(\\d{2} 月\\d{2} 日\\s*\\d{2}:\\d{2}) 开抢")
+            val timeMatch = timePattern.find(allText)
+            if (timeMatch != null) {
+                grabTime = timeMatch.groupValues[1]
+            }
+            
+            // 4. 提取倒计时
+            var countdown = ""
+            val countdownPattern = Regex("(\\d+ 天\\s*\\d+ 时\\s*\\d+ 分\\s*\\d+ 秒)")
+            val countdownMatch = countdownPattern.find(allText)
+            if (countdownMatch != null) {
+                countdown = countdownMatch.value
+            }
+            
+            val info = ExtractedConcertInfo(
+                concertName = concertName,
+                priceRange = priceRange,
+                grabTime = grabTime,
+                countdown = countdown
+            )
+            
+            Log.i(TAG, "✅ 提取到演出信息：$info")
+            return info
+        } catch (e: Exception) {
+            Log.e(TAG, "提取演出信息失败", e)
+            return null
+        }
+    }
+}
+
+/**
+ * 从大麦预售页面提取的演出信息
+ */
+data class ExtractedConcertInfo(
+    val concertName: String,
+    val priceRange: String,
+    val grabTime: String,
+    val countdown: String
+)
+
+    /**
      * 计算点击坐标（边界框中心）
      */
     fun calculateClickCenter(bounds: Rect): Pair<Int, Int> {
