@@ -29,13 +29,13 @@ class ScreenAnalyzer {
 
     companion object {
         private const val TAG = "ScreenAnalyzer"
-        
-        // 中文 OCR 识别器
-        private val chineseRecognizer = TextRecognition.getClient(ChineseTextRecognizerOptions.Builder().build())
-        
-        // 拉丁文 OCR 识别器（数字、英文）
-        private val latinRecognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
     }
+    
+    // 中文 OCR 识别器（类成员变量）
+    private val chineseRecognizer = TextRecognition.getClient(ChineseTextRecognizerOptions.Builder().build())
+    
+    // 拉丁文 OCR 识别器（数字、英文）
+    private val latinRecognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
 
     /**
      * 识别屏幕上的所有文字
@@ -268,7 +268,7 @@ data class ExtractedConcertInfo(
     fun close() {
         chineseRecognizer.close()
         latinRecognizer.close()
-        Log.i(TAG, "🔚 图像分析器已关闭")
+        android.util.Log.i(TAG, "Image analyzer closed")
     }
 }
 
