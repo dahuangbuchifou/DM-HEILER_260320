@@ -38,7 +38,16 @@ class TaskAdapter(
 
         fun bind(task: TicketTask) {
             taskName.text = task.name
-            taskDetails.text = "关键词: ${task.concertKeyword} | 日期: ${task.grabDate} ${task.grabTime} | 票档: ${task.ticketPriceKeyword}"
+            // ✅ 更新显示逻辑：显示 audienceName 和 selectedPrice
+            val dateStr = if (task.grabTime > 0) {
+                val sdf = java.text.SimpleDateFormat("MM-dd HH:mm", java.util.Locale.getDefault())
+                sdf.format(java.util.Date(task.grabTime))
+            } else {
+                task.grabDate
+            }
+            val audienceStr = if (task.audienceName.isNotEmpty()) task.audienceName else "未指定"
+            val priceStr = if (task.selectedPrice.isNotEmpty()) task.selectedPrice else task.ticketPriceKeyword
+            taskDetails.text = "关键词：${task.concertKeyword} | 日期：$dateStr | 观众：$audienceStr | 票档：$priceStr"
             taskStatus.text = task.status
 
             // 根据状态设置颜色
