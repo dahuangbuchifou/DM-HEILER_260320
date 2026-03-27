@@ -62,7 +62,7 @@ class ScreenCaptureService(private val context: Context) {
     private var latestFrame: Bitmap? = null
     
     // 截屏频率
-    private var captureIntervalMs = DEFAULT_INTERVAL_MS
+    private var captureIntervalMs: Long = DEFAULT_INTERVAL_MS.toLong()
     
     // 状态流
     private val _isCapturingFlow = MutableStateFlow(false)
@@ -109,6 +109,7 @@ class ScreenCaptureService(private val context: Context) {
      * @param fps 每秒帧数，默认 1
      */
     fun startCapture(fps: Int = DEFAULT_FPS) {
+        captureIntervalMs = (1000 / fps).toLong()
         if (mediaProjection == null) {
             Log.e(TAG, "❌ 未获取截屏权限，请先调用 requestPermission()")
             return
@@ -131,7 +132,6 @@ class ScreenCaptureService(private val context: Context) {
         Log.i(TAG, "屏幕尺寸：${screenWidth}x${screenHeight}, DPI: $screenDensity")
 
         // 创建 ImageReader
-        captureIntervalMs = 1000 / fps
         imageReader = ImageReader.newInstance(
             screenWidth,
             screenHeight,
