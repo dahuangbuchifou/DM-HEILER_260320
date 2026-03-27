@@ -22,7 +22,9 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.damaihelper.R
 import com.damaihelper.model.ConcertInfo
+import com.damaihelper.model.TaskDatabase
 import com.damaihelper.model.TicketTask
+import kotlinx.coroutines.launch
 import com.damaihelper.service.ConcertInfoExtractor
 import com.damaihelper.service.TicketGrabbingAccessibilityService
 import com.damaihelper.utils.AccessibilityUtils
@@ -168,28 +170,25 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun loadTasks() {
-        // 示例：创建一个1分钟后开抢的任务用于测试
-        val testTime = System.currentTimeMillis() + 60000
-        val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-        val timeFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
-        val date = Date(testTime)
-
-        val dummyTasks = listOf(
-            TicketTask(
-                id = 1,
-                name = "测试抢票任务",
-                concertKeyword = "刘宇宁",
-                grabDate = dateFormat.format(date),
-                grabTime = testTime,
-                ticketPriceKeyword = "888",
-                count = 1,
-                viewerNames = "张三,李四",
-                status = getString(R.string.task_status_idle)
-            )
-        )
-        currentTasks.clear()
-        currentTasks.addAll(dummyTasks)
-        taskAdapter.submitList(currentTasks.toList())
+        // ✅ 从数据库加载真实任务
+        lifecycleScope.launch {
+            try {
+                val db = TaskDatabase.getDatabase(this@MainActivity)
+                val tasks = db.taskDao().getAllTasks()
+                // tasks 是 Flow<List<TicketTask>>，收集一次
+                tasks.collect { taskList ->
+                    currentTasks.clear()
+                    currentTasks.addAll(taskList)
+                    taskAdapter.submitList(taskList)
+                    if (taskList.isNotEmpty()) {
+                        Log.d(TAG, "加载任务成功，共 ${taskList.size} 个任务")
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "加载任务失败", e)
+                Toast.makeText(this@MainActivity, "加载任务失败：${e.message}", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 
     // ==================== ✅ 新增方法区域 ====================
