@@ -10,6 +10,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.damaihelper.R
 import com.damaihelper.model.ConcertInfo
+import com.damaihelper.model.TaskDatabase
 import com.damaihelper.model.TicketTask
 import com.damaihelper.service.TicketGrabbingAccessibilityService
 import kotlinx.coroutines.launch
@@ -393,21 +394,25 @@ class TaskConfigActivity : AppCompatActivity() {
             ticketPriceKeyword = ticketPrice,
             count = 1,  // 默认 1 张
             viewerNames = viewerNames,
+            audienceName = viewerNames.split(",").firstOrNull()?.trim() ?: "",  // ✅ 新增：自动提取第一个观众人
+            selectedPrice = ticketPrice,  // ✅ 新增：保存选中的票价
             status = getString(R.string.task_status_idle),
             remark = remark
         )
 
-        // TODO: 保存到数据库
-        // lifecycleScope.launch {
-        //     taskDao.insertTask(task)
-        // }
-
-        Toast.makeText(this, "✅ 任务保存成功", Toast.LENGTH_SHORT).show()
-
-        // ✅ 新增：记录日志
-        Log.i(TAG, "任务已保存: $taskName, 抢票时间: $selectedDate $selectedTime")
-
-        finish()
+        // ✅ 保存到数据库
+        lifecycleScope.launch {
+            try {
+                val db = TaskDatabase.getDatabase(this@TaskConfigActivity)
+                db.taskDao().insertTask(task)
+                Toast.makeText(this@TaskConfigActivity, "✅ 任务保存成功", Toast.LENGTH_SHORT).show()
+                Log.i(TAG, "任务已保存到数据库：$taskName, ID: ${task.id}")
+                finish()
+            } catch (e: Exception) {
+                Log.e(TAG, "保存任务失败", e)
+                Toast.makeText(this@TaskConfigActivity, "❌ 保存失败：${e.message}", Toast.LENGTH_LONG).show()
+            }
+        }
     }
 
     /**
