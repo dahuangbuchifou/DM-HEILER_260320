@@ -25,6 +25,8 @@ import com.damaihelper.model.ConcertInfo
 import com.damaihelper.model.TaskDatabase
 import com.damaihelper.model.TicketTask
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.first
+import androidx.lifecycle.lifecycleScope
 import com.damaihelper.service.ConcertInfoExtractor
 import com.damaihelper.service.TicketGrabbingAccessibilityService
 import com.damaihelper.utils.AccessibilityUtils
@@ -138,8 +140,8 @@ class MainActivity : AppCompatActivity() {
      * 📅 与 TicketTask.kt 中的修复时间保持一致
      */
     private fun updateVersionTime() {
-        // 格式：2026-03-27 08:45
-        versionUpdateTimeText.text = "📅 版本更新时间：2026-03-27 08:45"
+        // 格式：2026-03-27 13:45
+        versionUpdateTimeText.text = "📅 版本更新时间：2026-03-27 13:45"
     }
 
     private fun setupListeners() {
@@ -175,14 +177,13 @@ class MainActivity : AppCompatActivity() {
             try {
                 val db = TaskDatabase.getDatabase(this@MainActivity)
                 val tasks = db.taskDao().getAllTasks()
-                // tasks 是 Flow<List<TicketTask>>，收集一次
-                tasks.collect { taskList ->
-                    currentTasks.clear()
-                    currentTasks.addAll(taskList)
-                    taskAdapter.submitList(taskList)
-                    if (taskList.isNotEmpty()) {
-                        Log.d(TAG, "加载任务成功，共 ${taskList.size} 个任务")
-                    }
+                // tasks 是 Flow<List<TicketTask>>，使用 first() 取一次值
+                val taskList = tasks.first()
+                currentTasks.clear()
+                currentTasks.addAll(taskList)
+                taskAdapter.submitList(taskList)
+                if (taskList.isNotEmpty()) {
+                    Log.d(TAG, "加载任务成功，共 ${taskList.size} 个任务")
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "加载任务失败", e)
