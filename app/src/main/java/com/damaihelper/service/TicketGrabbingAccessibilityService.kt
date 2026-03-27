@@ -174,9 +174,33 @@ class TicketGrabbingAccessibilityService : AccessibilityService() {
         grabbingJob = coroutineScope.launch {
             try {
                 Log.i(TAG, "========== 开始抢票任务 ==========")
-                Log.i(TAG, "演出: ${task.concertKeyword}")
-                Log.i(TAG, "日期: ${task.grabDate}")
-                Log.i(TAG, "票价: ${task.ticketPriceKeyword}")
+                Log.i(TAG, "演出：${task.concertKeyword}")
+                Log.i(TAG, "日期：${task.grabDate}")
+                Log.i(TAG, "票价：${task.ticketPriceKeyword}")
+
+                // ✅ 1. 打开大麦 App
+                Log.i(TAG, "步骤 1: 打开大麦 App...")
+                launchDamaiApp()
+                delay(2000)  // 等待 App 启动
+
+                // ✅ 2. 搜索演出
+                Log.i(TAG, "步骤 2: 搜索演出 \'${task.concertKeyword}\'...")
+                searchConcert(task.concertKeyword)
+                delay(3000)  // 等待搜索结果
+
+                // ✅ 3. 进入详情页并选择票档
+                Log.i(TAG, "步骤 3: 选择票档 \'${task.selectedPrice}\'...")
+                selectTicketPrice(task.selectedPrice)
+                delay(2000)
+
+                // ✅ 4. 选择观众
+                Log.i(TAG, "步骤 4: 选择观众 \'${task.audienceName}\'...")
+                selectAudience(task.audienceName)
+                delay(2000)
+
+                // ✅ 5. 提交订单
+                Log.i(TAG, "步骤 5: 提交订单...")
+                submitOrder()
 
                 Log.i(TAG, "========== 抢票任务完成 ==========")
             } catch (e: Exception) {
@@ -186,6 +210,57 @@ class TicketGrabbingAccessibilityService : AccessibilityService() {
                 currentTask = null
             }
         }
+    }
+
+
+    /**
+     * 打开大麦 App
+     */
+    private suspend fun launchDamaiApp() {
+        try {
+            val intent = packageManager.getLaunchIntentForPackage("cn.damai")
+            if (intent != null) {
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                startActivity(intent)
+                Log.i(TAG, "✅ 大麦 App 已打开")
+            } else {
+                Log.e(TAG, "❌ 未安装大麦 App")
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "打开大麦 App 失败", e)
+        }
+    }
+
+    /**
+     * 搜索演出
+     */
+    private suspend fun searchConcert(keyword: String) {
+        // TODO: 实现搜索逻辑
+        Log.i(TAG, "🔍 搜索演出：$keyword (待实现)")
+    }
+
+    /**
+     * 选择票档
+     */
+    private suspend fun selectTicketPrice(price: String) {
+        // TODO: 实现票档选择逻辑
+        Log.i(TAG, "🎫 选择票档：$price (待实现)")
+    }
+
+    /**
+     * 选择观众
+     */
+    private suspend fun selectAudience(name: String) {
+        // TODO: 实现观众选择逻辑
+        Log.i(TAG, "👤 选择观众：$name (待实现)")
+    }
+
+    /**
+     * 提交订单
+     */
+    private suspend fun submitOrder() {
+        // TODO: 实现订单提交逻辑
+        Log.i(TAG, "📝 提交订单 (待实现)")
     }
 
     fun stopGrabbing() {
