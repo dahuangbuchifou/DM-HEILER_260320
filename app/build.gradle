@@ -78,6 +78,9 @@ dependencies {
     // 📸 图像识别 - Google ML Kit
     implementation("com.google.mlkit:text-recognition:16.0.0")  // OCR 文字识别
     implementation("com.google.mlkit:text-recognition-chinese:16.0.0")  // 中文 OCR
+    
+    // Google Play Services Tasks (用于 await)
+    implementation("com.google.android.gms:play-services-tasks:18.0.2")
 
     // 测试库
     testImplementation("junit:junit:4.13.2")

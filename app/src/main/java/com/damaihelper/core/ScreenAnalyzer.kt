@@ -5,6 +5,7 @@ import android.graphics.Rect
 import android.util.Log
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.TextRecognition
+import com.google.android.gms.tasks.Tasks
 import com.google.mlkit.vision.text.chinese.ChineseTextRecognizerOptions
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 
@@ -40,7 +41,7 @@ class ScreenAnalyzer {
     suspend fun recognizeText(bitmap: Bitmap): List<TextBlock> {
         try {
             val inputImage = InputImage.fromBitmap(bitmap, 0)
-            val visionText = chineseRecognizer.process(inputImage).await()
+            val visionText = Tasks.await(chineseRecognizer.process(inputImage)).result
             
             val textBlocks = visionText.textBlocks.map { block ->
                 TextBlock(

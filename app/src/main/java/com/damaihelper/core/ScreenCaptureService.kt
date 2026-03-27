@@ -7,6 +7,7 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.PixelFormat
 import android.hardware.display.DisplayManager
+import android.view.Display
 import android.hardware.display.VirtualDisplay
 import android.media.Image
 import android.media.ImageReader
@@ -121,7 +122,7 @@ class ScreenCaptureService(private val context: Context) {
         // 获取屏幕尺寸
         val metrics = DisplayMetrics()
         val displayManager = context.getSystemService(Context.DISPLAY_SERVICE) as DisplayManager
-        displayManager.getDisplay(DisplayManager.DEFAULT_DISPLAY).getMetrics(metrics)
+        displayManager.getDisplay(Display.DEFAULT_DISPLAY).getMetrics(metrics)
         
         screenWidth = metrics.widthPixels
         screenHeight = metrics.heightPixels
@@ -260,7 +261,7 @@ class ScreenCaptureService(private val context: Context) {
         // 如果屏幕宽度小于完整宽度的 90%，可能是分屏
         val displayManager = context.getSystemService(Context.DISPLAY_SERVICE) as DisplayManager
         val metrics = DisplayMetrics()
-        displayManager.getDisplay(DisplayManager.DEFAULT_DISPLAY).getMetrics(metrics)
+        displayManager.getDisplay(Display.DEFAULT_DISPLAY).getMetrics(metrics)
         
         val currentWidth = metrics.widthPixels
         val isSplit = currentWidth < screenWidth * 0.9
