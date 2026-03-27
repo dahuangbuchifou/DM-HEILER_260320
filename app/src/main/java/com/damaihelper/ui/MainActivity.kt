@@ -140,8 +140,8 @@ class MainActivity : AppCompatActivity() {
      * 📅 与 TicketTask.kt 中的修复时间保持一致
      */
     private fun updateVersionTime() {
-        // 格式：2026-03-27 13:45
-        versionUpdateTimeText.text = "📅 版本更新时间：2026-03-27 13:45"
+        // 格式：2026-03-27 15:50
+        versionUpdateTimeText.text = "📅 版本更新时间：2026-03-27 15:50"
     }
 
     private fun setupListeners() {

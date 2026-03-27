@@ -235,8 +235,60 @@ class TicketGrabbingAccessibilityService : AccessibilityService() {
      * 搜索演出
      */
     private suspend fun searchConcert(keyword: String) {
-        // TODO: 实现搜索逻辑
-        Log.i(TAG, "🔍 搜索演出：$keyword (待实现)")
+        try {
+            // 1. 等待大麦 App 完全加载
+            delay(1000)
+            
+            // 2. 查找搜索框（大麦 App 首页顶部通常有搜索框）
+            val searchNode = findNodeByText("搜索") ?: findNodeByText("搜索演出") ?: findNodeByText(keyword)
+            
+            if (searchNode != null) {
+                searchNode.performAction(AccessibilityNodeInfo.ACTION_CLICK)
+                Log.i(TAG, "✅ 点击搜索框")
+                delay(500)
+                
+                // 3. 输入关键词（需要输入法支持）
+                // 由于无障碍服务无法直接输入文字，需要用户手动输入
+                Log.i(TAG, "⚠️ 请在搜索框输入：$keyword")
+                
+                // 4. 等待用户输入后，查找搜索按钮
+                delay(3000)
+                
+                // 5. 点击搜索结果
+                val resultNode = findNodeByText(keyword)
+                if (resultNode != null) {
+                    resultNode.performAction(AccessibilityNodeInfo.ACTION_CLICK)
+                    Log.i(TAG, "✅ 点击搜索结果：$keyword")
+                }
+            } else {
+                Log.w(TAG, "⚠️ 未找到搜索框，请手动搜索")
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "搜索演出失败", e)
+        }
+    }
+    
+    /**
+     * 根据文本查找节点
+     */
+    private fun findNodeByText(text: String): AccessibilityNodeInfo? {
+        val rootNode = rootInActiveWindow ?: return null
+        return findNodeByTextRecursive(rootNode, text)
+    }
+    
+    private fun findNodeByTextRecursive(node: AccessibilityNodeInfo, text: String): AccessibilityNodeInfo? {
+        if (node.text?.toString()?.contains(text, ignoreCase = true) == true) {
+            return node
+        }
+        
+        for (i in 0 until node.childCount) {
+            val child = node.getChild(i) ?: continue
+            val result = findNodeByTextRecursive(child, text)
+            if (result != null) {
+                return result
+            }
+        }
+        return null
     }
 
     /**
