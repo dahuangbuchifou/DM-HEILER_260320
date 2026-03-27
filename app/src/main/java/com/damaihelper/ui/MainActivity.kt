@@ -36,6 +36,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private lateinit var accessibilityStatusText: TextView
+    private lateinit var versionUpdateTimeText: TextView
     private lateinit var taskRecyclerView: RecyclerView
     private lateinit var taskAdapter: TaskAdapter
     private lateinit var addTaskButton: Button
@@ -53,11 +54,15 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         accessibilityStatusText = findViewById(R.id.accessibility_status_text)
+        versionUpdateTimeText = findViewById(R.id.version_update_time_text)
         taskRecyclerView = findViewById(R.id.task_recycler_view)
         addTaskButton = findViewById(R.id.add_task_button)
 
         // ✅ 新增：初始化抓取按钮
         extractConcertInfoButton = findViewById(R.id.btnExtractConcertInfo)
+
+        // ✅ 设置版本更新时间
+        updateVersionTime()
 
         setupTaskList()
         setupListeners()
@@ -124,6 +129,15 @@ class MainActivity : AppCompatActivity() {
             taskAdapter.submitList(currentTasks.toList())
             taskAdapter.notifyItemChanged(index)
         }
+    }
+
+    /**
+     * 设置版本更新时间显示
+     * 📅 与 TicketTask.kt 中的修复时间保持一致
+     */
+    private fun updateVersionTime() {
+        // 格式：2026-03-27 08:45
+        versionUpdateTimeText.text = "📅 版本更新时间：2026-03-27 08:45"
     }
 
     private fun setupListeners() {

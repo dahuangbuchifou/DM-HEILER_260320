@@ -6,6 +6,20 @@
     android:orientation="vertical"
     android:padding="16dp">
 
+    <!-- 版本更新时间 -->
+    <TextView
+        android:id="@+id/version_update_time_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="📅 版本更新时间：2026-03-26 20:40"
+        android:textSize="14sp"
+        android:textColor="#FF9800"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:padding="8dp"
+        android:background="#FFF3E0"
+        android:layout_marginBottom="12dp"/>
+
     <!-- 无障碍服务状态 -->
     <TextView
         android:id="@+id/accessibility_status_text"
