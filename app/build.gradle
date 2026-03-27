@@ -75,6 +75,10 @@ dependencies {
     // ⚠️ 注释掉 TrueTime（使用自己实现的 NTP）
     // implementation("com.github.instacart:truetime-android:4.0.0.alpha")
 
+    // 📸 图像识别 - Google ML Kit
+    implementation("com.google.mlkit:text-recognition:16.0.0")  // OCR 文字识别
+    implementation("com.google.mlkit:text-recognition-chinese:16.0.0")  // 中文 OCR
+
     // 测试库
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
