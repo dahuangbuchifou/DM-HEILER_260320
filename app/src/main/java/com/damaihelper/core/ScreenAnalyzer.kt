@@ -241,17 +241,6 @@ class ScreenAnalyzer {
             return null
         }
     }
-}
-
-/**
- * 从大麦预售页面提取的演出信息
- */
-data class ExtractedConcertInfo(
-    val concertName: String,
-    val priceRange: String,
-    val grabTime: String,
-    val countdown: String
-)
 
     /**
      * 计算点击坐标（边界框中心）
@@ -271,6 +260,16 @@ data class ExtractedConcertInfo(
         android.util.Log.i(TAG, "Image analyzer closed")
     }
 }
+
+/**
+ * 从大麦预售页面提取的演出信息
+ */
+data class ExtractedConcertInfo(
+    val concertName: String,
+    val priceRange: String,
+    val grabTime: String,
+    val countdown: String
+)
 
 /**
  * 文本块数据类
