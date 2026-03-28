@@ -386,7 +386,33 @@ class TicketGrabbingAccessibilityService : AccessibilityService() {
         }
         humanBehaviorSimulator.simulateThinkingTime(2000L, 3000L)
 
-        val rootNode = rootInActiveWindow
+                // ✅ 修复：分屏模式下检测大麦 App（2026-03-28）
+                // 问题：分屏时焦点可能在助手 App 上，导致检测到 com.damaihelper
+                // 方案：先检查当前窗口，如果是助手自己，尝试查找分屏中的大麦窗口
+                val rootNode = findDamaiRootNode()
+                if (rootNode == null) {
+                    val currentPackage = rootInActiveWindow?.packageName?.toString() ?: "未知"
+                    concertInfoExtractor.broadcastError(
+                        "当前不在大麦 App 中\n" +
+                                "检测到：$currentPackage\n" +
+                                "请打开大麦 App 的演出详情页\n" +
+                                "提示：分屏模式下请确保大麦 App 已打开"
+                    )
+                    return@launch
+                }
+
+                val currentPackage = rootNode.packageName?.toString() ?: ""
+                Log.i(TAG, "当前应用包名：$currentPackage")
+
+                // 检查是否是大麦相关应用
+                if (!isDamaiApp(currentPackage)) {
+                    concertInfoExtractor.broadcastError(
+                        "当前不在大麦 App 中\n" +
+                                "检测到：$currentPackage\n" +
+                                "请打开大麦 App 的演出详情页"
+                    )
+                    return@launch
+                }
         if (rootNode == null || detectCurrentPage(rootNode) != PageType.DETAIL) {
             throw IllegalStateException("未成功进入详情页")
         }
@@ -408,7 +434,33 @@ class TicketGrabbingAccessibilityService : AccessibilityService() {
         var lastScrollTime = 0L
 
         while (System.currentTimeMillis() < countdownStart) {
-            val rootNode = rootInActiveWindow
+                // ✅ 修复：分屏模式下检测大麦 App（2026-03-28）
+                // 问题：分屏时焦点可能在助手 App 上，导致检测到 com.damaihelper
+                // 方案：先检查当前窗口，如果是助手自己，尝试查找分屏中的大麦窗口
+                val rootNode = findDamaiRootNode()
+                if (rootNode == null) {
+                    val currentPackage = rootInActiveWindow?.packageName?.toString() ?: "未知"
+                    concertInfoExtractor.broadcastError(
+                        "当前不在大麦 App 中\n" +
+                                "检测到：$currentPackage\n" +
+                                "请打开大麦 App 的演出详情页\n" +
+                                "提示：分屏模式下请确保大麦 App 已打开"
+                    )
+                    return@launch
+                }
+
+                val currentPackage = rootNode.packageName?.toString() ?: ""
+                Log.i(TAG, "当前应用包名：$currentPackage")
+
+                // 检查是否是大麦相关应用
+                if (!isDamaiApp(currentPackage)) {
+                    concertInfoExtractor.broadcastError(
+                        "当前不在大麦 App 中\n" +
+                                "检测到：$currentPackage\n" +
+                                "请打开大麦 App 的演出详情页"
+                    )
+                    return@launch
+                }
             try {
                 if (rootNode != null && detectCurrentPage(rootNode) != PageType.DETAIL) {
                     Log.w(TAG, "⚠️ 页面变化！尝试返回...")
@@ -837,26 +889,33 @@ class TicketGrabbingAccessibilityService : AccessibilityService() {
             try {
                 delay(500) // 等待页面稳定
 
-                val rootNode = rootInActiveWindow
+                // ✅ 修复：分屏模式下检测大麦 App（2026-03-28）
+                // 问题：分屏时焦点可能在助手 App 上，导致检测到 com.damaihelper
+                // 方案：先检查当前窗口，如果是助手自己，尝试查找分屏中的大麦窗口
+                val rootNode = findDamaiRootNode()
                 if (rootNode == null) {
-                    concertInfoExtractor.broadcastError("无法获取页面信息，请确保已打开大麦App")
-                    return@launch
-                }
-
-                // ✅ 优化：先检查当前应用包名
-                val currentPackage = rootNode.packageName?.toString() ?: ""
-                Log.i(TAG, "当前应用包名: $currentPackage")
-
-                // 检查是否是大麦相关应用
-                if (!isDamaiApp(currentPackage)) {
+                    val currentPackage = rootInActiveWindow?.packageName?.toString() ?: "未知"
                     concertInfoExtractor.broadcastError(
-                        "当前不在大麦App中\n" +
-                                "检测到: $currentPackage\n" +
-                                "请打开大麦App的演出详情页"
+                        "当前不在大麦 App 中\n" +
+                                "检测到：$currentPackage\n" +
+                                "请打开大麦 App 的演出详情页\n" +
+                                "提示：分屏模式下请确保大麦 App 已打开"
                     )
                     return@launch
                 }
 
+                val currentPackage = rootNode.packageName?.toString() ?: ""
+                Log.i(TAG, "当前应用包名：$currentPackage")
+
+                // 检查是否是大麦相关应用
+                if (!isDamaiApp(currentPackage)) {
+                    concertInfoExtractor.broadcastError(
+                        "当前不在大麦 App 中\n" +
+                                "检测到：$currentPackage\n" +
+                                "请打开大麦 App 的演出详情页"
+                    )
+                    return@launch
+                }
                 // ✅ 优化：增强页面检测，降低严格度
                 if (!isOnDamaiDetailPage(rootNode)) {
                     // 输出当前页面的所有文本用于调试
@@ -893,6 +952,57 @@ class TicketGrabbingAccessibilityService : AccessibilityService() {
     /**
      * ✅ 新增：检查是否是大麦相关应用
      */
+
+    /**
+     * ✅ 修复：分屏模式下查找大麦 App 的根节点（2026-03-28）
+     * 问题：分屏时焦点可能在助手 App 上，rootInActiveWindow 返回的是助手窗口
+     * 方案：遍历所有窗口，查找大麦 App 的窗口
+     */
+    private fun findDamaiRootNode(): AccessibilityNodeInfo? {
+        // 方案 1: 先检查当前活动窗口
+        val activeRoot = rootInActiveWindow
+        val activePackage = activeRoot?.packageName?.toString() ?: ""
+        
+        // 如果当前窗口就是大麦，直接返回
+        if (isDamaiApp(activePackage)) {
+            Log.i(TAG, "当前窗口是大麦 App: $activePackage")
+            return activeRoot
+        }
+        
+        // 方案 2: 当前窗口是助手自己，尝试查找分屏中的大麦窗口（API 30+）
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+            try {
+                val windows = windows
+                Log.d(TAG, "分屏检测：找到 ${windows.size} 个窗口")
+                
+                for (window in windows) {
+                    val windowRoot = window.root
+                    val windowPackage = windowRoot?.packageName?.toString() ?: ""
+                    Log.d(TAG, "窗口包名：$windowPackage")
+                    
+                    if (isDamaiApp(windowPackage)) {
+                        Log.i(TAG, "分屏中找到大麦 App: $windowPackage")
+                        activeRoot?.recycle() // 回收之前的根节点
+                        return windowRoot
+                    }
+                    windowRoot?.recycle()
+                }
+            } catch (e: Exception) {
+                Log.w(TAG, "分屏检测失败：${e.message}")
+            }
+        }
+        
+        // 方案 3: 当前窗口是助手自己，且找不到分屏大麦，返回 null 让上层报错
+        if (activePackage == packageName) {
+            Log.w(TAG, "当前窗口是助手自己，未找到分屏大麦")
+            activeRoot?.recycle()
+            return null
+        }
+        
+        // 其他情况返回当前活动窗口
+        return activeRoot
+    }
+
     private fun isDamaiApp(packageName: String): Boolean {
         val damaiPackages = listOf(
             "cn.damai",           // 大麦主应用
