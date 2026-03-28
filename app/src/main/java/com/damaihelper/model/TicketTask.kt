@@ -1,7 +1,9 @@
 // ============================================================================
-// 📅 最新修复：2026-03-28 19:35
+// 📅 最新修复：2026-03-28 19:45
 // 🔧 修复内容：
-//   - 修复 return@launch 编译错误（改为 return）
+//   - 修复协程作用域错误（return vs return@launch）
+//   - 删除 preparePhase 中重复插入的代码（28 行）
+//   - extractFromDetailPage 添加非空断言（rootNode!!）
 //   - 分屏模式下大麦 App 检测优化（findDamaiRootNode）
 //   - 添加 audienceName 字段（用于自动选择观演人）
 //   - 添加 selectedPrice 字段（用于步骤 2 选择票档）
