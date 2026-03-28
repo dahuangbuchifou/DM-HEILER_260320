@@ -1,10 +1,12 @@
 // ============================================================================
-// 📅 最新修复：2026-03-28 21:45
+// 📅 最新修复：2026-03-28 22:20
 // 🔧 修复内容：
-//   - 🆕 添加 sessionId 字段（指定场次 ID）
+//   -  添加 sessionId 字段（指定场次 ID）
 //   - 🆕 添加 priceTiers 字段（多票档备选，逗号分隔）
 //   - 🆕 添加 audienceIndex 字段（观影人索引，默认 1）
 //   - 🆕 添加 grabMode 字段（抢票模式：normal/snap）
+//   - 🐛 恢复 audienceName 字段（兼容旧代码）
+//   - 🐛 修复 getTaskById 类型不匹配（Long → Int 转换）
 //   - 修复协程作用域错误（return vs return@launch）
 //   - 删除 preparePhase 中重复插入的代码（28 行）
 //   - extractFromDetailPage 添加非空断言（rootNode!!）

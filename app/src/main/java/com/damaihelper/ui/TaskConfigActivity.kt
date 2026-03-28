@@ -446,7 +446,8 @@ class TaskConfigActivity : AppCompatActivity() {
         lifecycleScope.launch {
             try {
                 val db = TaskDatabase.getDatabase(this@TaskConfigActivity)
-                val task = db.taskDao().getTaskById(taskId)
+                // ✅ 修复：将 Long 转换为 Int（TaskDao 使用 Int 类型）
+                val task = db.taskDao().getTaskById(taskId.toInt())
                 if (task != null) {
                     fillTaskData(task)
                 } else {
