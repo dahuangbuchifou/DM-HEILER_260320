@@ -37,6 +37,7 @@ _记录所有编译错误及解决方案，避免重复踩坑_
 | 22 | `accessibility_service_config.xml` | 7 | 配置缺失 | 缺少 `canPerformGestures` 属性 | 添加 `android:canPerformGestures="true"` | ✅ |
 | 23 | `DamaiPageAdapter.kt` | 213/215 | 常量未解析 | Kotlin 与 AGP 版本兼容性问题导致 Android SDK 常量无法识别 | 使用整数值 `1` 替代常量 | ✅ |
 | 24 | `app/build.gradle` | 19 | 版本不一致 | Kotlin stdlib (1.9.22) 与插件 (1.9.25) 版本不匹配 | 统一为 1.9.25 | ✅ |
+| 25 | `ScreenAnalyzer.kt` | 244/273 | 结构错误 | 第 244 行的 `}` 提前闭合 class，导致 `calculateClickCenter()` 和 `close()` 函数成为"孤儿" | 删除提前闭合的 `}`，将函数移回 class 内部，data class 移到文件末尾 | ✅ |
 
 ---
 
@@ -293,5 +294,67 @@ when (status.name) {
 
 ---
 
-**最后更新：** 2026-03-25 10:36  
+---
+
+### 第 4 轮：Class 结构修复（2026-03-28 18:37）
+
+#### 错误模式 5：Class 提前闭合导致函数"孤儿"
+
+**错误信息：**
+```
+e: app/src/main/java/com/damaihelper/core/ScreenAnalyzer.kt:273:1
+Expecting a top level declaration, but found '}'
+```
+
+**问题代码结构：**
+```kotlin
+class ScreenAnalyzer {
+    // ... 各种函数 ...
+    
+    suspend fun extractConcertInfoFromPreSalePage(...): ExtractedConcertInfo? {
+        // ...
+    }
+}  // ❌ 第 244 行：提前闭合了 class
+
+/** data class 定义 */
+data class ExtractedConcertInfo(...)
+
+    // ❌ 第 257-272 行：这些函数应该在 class 内部，但现在在 class 外面！
+    fun calculateClickCenter(bounds: Rect): Pair<Int, Int> { ... }
+    fun close() { ... }
+}  // ❌ 第 273 行：孤立的 }，编译器期望顶层声明
+```
+
+**修复方案：**
+```kotlin
+class ScreenAnalyzer {
+    // ... 各种函数 ...
+    
+    suspend fun extractConcertInfoFromPreSalePage(...): ExtractedConcertInfo? {
+        // ...
+    }
+    
+    // ✅ 将这两个函数移回 class 内部
+    fun calculateClickCenter(bounds: Rect): Pair<Int, Int> { ... }
+    fun close() { ... }
+}  // class 正确闭合
+
+/** data class 定义移到文件末尾 */
+data class ExtractedConcertInfo(...)
+data class TextBlock(...)
+```
+
+**教训：**
+1. **Class 闭合括号位置要谨慎** - 确保所有成员函数都在 `}` 之前
+2. **data class 应该放在文件末尾** - 作为独立类型定义，不在主 class 内部
+3. **IDE 结构视图很有用** - 用 IDE 的 Structure 面板检查 class 成员是否完整
+
+**预防：**
+- 写代码时注意缩进，确保函数在 class 内部
+- 使用 IDE 的代码折叠功能，检查 class 边界
+- 编译前快速扫描文件结构，确认没有孤立的 `}`
+
+---
+
+**最后更新：** 2026-03-28 18:37  
 **状态：** 所有已知错误已修复
