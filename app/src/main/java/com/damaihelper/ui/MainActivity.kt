@@ -155,7 +155,7 @@ class MainActivity : AppCompatActivity() {
      */
     private fun updateVersionTime() {
         // 格式：2026-03-27 20:45
-        versionUpdateTimeText.text = "📅 版本更新时间：2026-03-28 19:45"
+        versionUpdateTimeText.text = "📅 版本更新时间：2026-03-28 21:45"
     }
 
     private fun setupListeners() {

@@ -33,6 +33,10 @@ class TaskConfigActivity : AppCompatActivity() {
     private lateinit var concertKeywordEdit: EditText
     private lateinit var grabDateEdit: EditText
     private lateinit var grabTimeEdit: EditText
+    private lateinit var sessionIdEdit: EditText        // 🆕 场次 ID
+    private lateinit var priceTiersEdit: EditText       // 🆕 多票档
+    private lateinit var audienceIndexEdit: EditText    // 🆕 观影人索引
+    private lateinit var grabModeRadioGroup: RadioGroup // 🆕 抢票模式
     private lateinit var ticketPriceEdit: EditText
     private lateinit var viewerNamesEdit: EditText
     private lateinit var remarkEdit: EditText
@@ -80,6 +84,10 @@ class TaskConfigActivity : AppCompatActivity() {
         concertKeywordEdit = findViewById(R.id.concert_keyword_edit)
         grabDateEdit = findViewById(R.id.grab_date_edit)
         grabTimeEdit = findViewById(R.id.grab_time_edit)
+        sessionIdEdit = findViewById(R.id.session_id_edit)          // 🆕 场次 ID
+        priceTiersEdit = findViewById(R.id.price_tiers_edit)        // 🆕 多票档
+        audienceIndexEdit = findViewById(R.id.audience_index_edit)  // 🆕 观影人索引
+        grabModeRadioGroup = findViewById(R.id.grab_mode_radio_group) // 🆕 抢票模式
         ticketPriceEdit = findViewById(R.id.ticket_price_edit)
         viewerNamesEdit = findViewById(R.id.viewer_names_edit)
         remarkEdit = findViewById(R.id.remark_edit)
@@ -102,6 +110,9 @@ class TaskConfigActivity : AppCompatActivity() {
         grabDateEdit.isClickable = true
         grabTimeEdit.isFocusable = false
         grabTimeEdit.isClickable = true
+        
+        // 🆕 设置默认值
+        audienceIndexEdit.setText("1")
     }
 
     private fun setupListeners() {
@@ -381,6 +392,15 @@ class TaskConfigActivity : AppCompatActivity() {
         val ticketPrice = ticketPriceEdit.text.toString().trim()
         val viewerNames = viewerNamesEdit.text.toString().trim()
         val remark = remarkEdit.text.toString().trim()
+        
+        // 🆕 新增字段
+        val sessionId = sessionIdEdit.text.toString().trim()
+        val priceTiers = priceTiersEdit.text.toString().trim()
+        val audienceIndex = audienceIndexEdit.text.toString().trim().toIntOrNull() ?: 1
+        val grabMode = when (grabModeRadioGroup.checkedRadioButtonId) {
+            R.id.radio_snap -> "snap"
+            else -> "normal"
+        }
 
         // 将日期和时间转换为时间戳
         val grabTime = parseTimeToTimestamp(selectedDate, selectedTime)
@@ -391,11 +411,15 @@ class TaskConfigActivity : AppCompatActivity() {
             concertKeyword = concertKeyword,
             grabDate = selectedDate,
             grabTime = grabTime,
+            sessionId = sessionId,
+            priceTiers = priceTiers,
             ticketPriceKeyword = ticketPrice,
             count = 1,  // 默认 1 张
             viewerNames = viewerNames,
-            audienceName = viewerNames.split(",").firstOrNull()?.trim() ?: "",  // ✅ 新增：自动提取第一个观众人
-            selectedPrice = ticketPrice,  // ✅ 新增：保存选中的票价
+            audienceIndex = audienceIndex,
+            audienceName = viewerNames.split(",").getOrNull(audienceIndex - 1)?.trim() ?: viewerNames.split(",").firstOrNull()?.trim() ?: "",
+            selectedPrice = ticketPrice,
+            grabMode = grabMode,
             status = getString(R.string.task_status_idle),
             remark = remark
         )
@@ -419,13 +443,22 @@ class TaskConfigActivity : AppCompatActivity() {
      * 加载任务用于编辑
      */
     private fun loadTaskForEditing(taskId: Long) {
-        // TODO: 从数据库加载任务
-        // lifecycleScope.launch {
-        //     val task = taskDao.getTaskById(taskId)
-        //     if (task != null) {
-        //         fillTaskData(task)
-        //     }
-        // }
+        lifecycleScope.launch {
+            try {
+                val db = TaskDatabase.getDatabase(this@TaskConfigActivity)
+                val task = db.taskDao().getTaskById(taskId)
+                if (task != null) {
+                    fillTaskData(task)
+                } else {
+                    Toast.makeText(this@TaskConfigActivity, "❌ 任务不存在", Toast.LENGTH_SHORT).show()
+                    finish()
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "加载任务失败", e)
+                Toast.makeText(this@TaskConfigActivity, "❌ 加载失败：${e.message}", Toast.LENGTH_LONG).show()
+                finish()
+            }
+        }
     }
 
     /**
@@ -447,6 +480,17 @@ class TaskConfigActivity : AppCompatActivity() {
             calendar.get(Calendar.MINUTE)
         )
         grabTimeEdit.setText(selectedTime)
+
+        // 🆕 填充新增字段
+        sessionIdEdit.setText(task.sessionId)
+        priceTiersEdit.setText(task.priceTiers)
+        audienceIndexEdit.setText(task.audienceIndex.toString())
+        
+        // 🆕 设置抢票模式
+        when (task.grabMode) {
+            "snap" -> grabModeRadioGroup.check(R.id.radio_snap)
+            else -> grabModeRadioGroup.check(R.id.radio_normal)
+        }
 
         ticketPriceEdit.setText(task.ticketPriceKeyword)
         viewerNamesEdit.setText(task.viewerNames)
