@@ -38,6 +38,7 @@ _记录所有编译错误及解决方案，避免重复踩坑_
 | 23 | `DamaiPageAdapter.kt` | 213/215 | 常量未解析 | Kotlin 与 AGP 版本兼容性问题导致 Android SDK 常量无法识别 | 使用整数值 `1` 替代常量 | ✅ |
 | 24 | `app/build.gradle` | 19 | 版本不一致 | Kotlin stdlib (1.9.22) 与插件 (1.9.25) 版本不匹配 | 统一为 1.9.25 | ✅ |
 | 25 | `ScreenAnalyzer.kt` | 244/273 | 结构错误 | 第 244 行的 `}` 提前闭合 class，导致 `calculateClickCenter()` 和 `close()` 函数成为"孤儿" | 删除提前闭合的 `}`，将函数移回 class 内部，data class 移到文件末尾 | ✅ |
+| 26 | `TicketGrabbingAccessibilityService.kt` | 401/414/449/462 | 未解析引用 | `return@launch` 在普通函数中使用，但代码不在 `launch` 协程作用域内 | 改为 `return`（这些代码在 `suspend fun` 中，不是 `launch {}` 块内） | ✅ |
 
 ---
 
@@ -356,5 +357,76 @@ data class TextBlock(...)
 
 ---
 
-**最后更新：** 2026-03-28 18:37  
+### 第 5 轮：协程作用域错误修复（2026-03-28 19:35）
+
+#### 错误模式 6：错误的 return@标签 使用
+
+**错误信息：**
+```
+e: Unresolved reference: @launch
+```
+
+**问题代码：**
+```kotlin
+private suspend fun preparePhase(task: TicketTask) {
+    // ... 一些代码 ...
+    
+    val rootNode = findDamaiRootNode()
+    if (rootNode == null) {
+        concertInfoExtractor.broadcastError("...")
+        return@launch  // ❌ 错误：这里不在 launch {} 块内
+    }
+    
+    // ...
+}
+```
+
+**原因分析：**
+- `return@标签` 用于从特定的 lambda 或匿名函数返回
+- `launch { }` 块内的代码可以使用 `return@launch` 从协程块返回
+- 但这段代码在 `suspend fun` 普通函数中，不在 `launch {}` 块内
+- 因此 `@launch` 标签不存在，导致编译错误
+
+**正确代码：**
+```kotlin
+private suspend fun preparePhase(task: TicketTask) {
+    // ... 一些代码 ...
+    
+    val rootNode = findDamaiRootNode()
+    if (rootNode == null) {
+        concertInfoExtractor.broadcastError("...")
+        return  // ✅ 正确：普通函数使用 return
+    }
+    
+    // ...
+}
+```
+
+**教训：**
+1. **看清函数类型** - `suspend fun` 是普通函数，不是 lambda
+2. **return 标签要匹配** - 只能使用存在的标签
+3. **普通函数用 return** - 不需要标签时直接用 `return`
+
+**常见场景：**
+```kotlin
+// ❌ 错误示例
+suspend fun myFunction() {
+    launch {
+        // ...
+    }
+    return@launch  // 错误：在函数级别，不在 launch 块内
+}
+
+// ✅ 正确示例
+suspend fun myFunction() {
+    launch {
+        return@launch  // 正确：在 launch 块内
+    }
+    return  // 正确：函数级别返回
+}
+```
+
+---
+
+**最后更新：** 2026-03-28 19:35  
 **状态：** 所有已知错误已修复
