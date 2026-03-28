@@ -494,6 +494,8 @@ class TaskConfigActivity : AppCompatActivity() {
 
         ticketPriceEdit.setText(task.ticketPriceKeyword)
         viewerNamesEdit.setText(task.viewerNames)
+        // ✅ 填充 audienceName（兼容字段）
+        // audienceName 字段已在 Task 中存在，直接使用
         remarkEdit.setText(task.remark)
     }
 

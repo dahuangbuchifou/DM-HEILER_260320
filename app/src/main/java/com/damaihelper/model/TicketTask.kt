@@ -64,6 +64,9 @@ data class TicketTask(
     // 观演人姓名（逗号分隔，如："张三，李四"）
     val viewerNames: String,
 
+    // 观演人姓名（用于自动选择，单个姓名）- 兼容字段
+    val audienceName: String = "",
+
     // 🆕 观影人索引（默认第 1 个，从 1 开始）
     val audienceIndex: Int = 1,
 
