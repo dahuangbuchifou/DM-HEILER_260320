@@ -386,37 +386,6 @@ class TicketGrabbingAccessibilityService : AccessibilityService() {
         }
         humanBehaviorSimulator.simulateThinkingTime(2000L, 3000L)
 
-                // ✅ 修复：分屏模式下检测大麦 App（2026-03-28）
-                // 问题：分屏时焦点可能在助手 App 上，导致检测到 com.damaihelper
-                // 方案：先检查当前窗口，如果是助手自己，尝试查找分屏中的大麦窗口
-                val rootNode = findDamaiRootNode()
-                if (rootNode == null) {
-                    val currentPackage = rootInActiveWindow?.packageName?.toString() ?: "未知"
-                    concertInfoExtractor.broadcastError(
-                        "当前不在大麦 App 中\n" +
-                                "检测到：$currentPackage\n" +
-                                "请打开大麦 App 的演出详情页\n" +
-                                "提示：分屏模式下请确保大麦 App 已打开"
-                    )
-                    return
-                }
-
-                val currentPackage = rootNode.packageName?.toString() ?: ""
-                Log.i(TAG, "当前应用包名：$currentPackage")
-
-                // 检查是否是大麦相关应用
-                if (!isDamaiApp(currentPackage)) {
-                    concertInfoExtractor.broadcastError(
-                        "当前不在大麦 App 中\n" +
-                                "检测到：$currentPackage\n" +
-                                "请打开大麦 App 的演出详情页"
-                    )
-                    return
-                }
-        if (rootNode == null || detectCurrentPage(rootNode) != PageType.DETAIL) {
-            throw IllegalStateException("未成功进入详情页")
-        }
-
         Log.i(TAG, "✓ 准备完成，进入就绪状态")
     }
 
@@ -901,7 +870,7 @@ class TicketGrabbingAccessibilityService : AccessibilityService() {
                                 "请打开大麦 App 的演出详情页\n" +
                                 "提示：分屏模式下请确保大麦 App 已打开"
                     )
-                    return
+                    return@launch
                 }
 
                 val currentPackage = rootNode.packageName?.toString() ?: ""
@@ -914,7 +883,7 @@ class TicketGrabbingAccessibilityService : AccessibilityService() {
                                 "检测到：$currentPackage\n" +
                                 "请打开大麦 App 的演出详情页"
                     )
-                    return
+                    return@launch
                 }
                 // ✅ 优化：增强页面检测，降低严格度
                 if (!isOnDamaiDetailPage(rootNode)) {
@@ -925,13 +894,13 @@ class TicketGrabbingAccessibilityService : AccessibilityService() {
                         "请确保已进入演出详情页\n" +
                                 "提示：页面需要包含「立即购买」或「演出介绍」等元素"
                     )
-                    return
+                    return@launch
                 }
 
                 Log.i(TAG, "✅ 页面检测通过，开始抓取信息...")
 
                 // 抓取信息
-                val info = concertInfoExtractor.extractFromDetailPage(rootNode)
+                val info = concertInfoExtractor.extractFromDetailPage(rootNode!!)
 
                 if (info != null) {
                     concertInfoExtractor.broadcastConcertInfo(info)
