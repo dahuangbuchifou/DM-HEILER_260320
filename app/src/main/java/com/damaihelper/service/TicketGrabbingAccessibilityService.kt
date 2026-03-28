@@ -398,7 +398,7 @@ class TicketGrabbingAccessibilityService : AccessibilityService() {
                                 "请打开大麦 App 的演出详情页\n" +
                                 "提示：分屏模式下请确保大麦 App 已打开"
                     )
-                    return@launch
+                    return
                 }
 
                 val currentPackage = rootNode.packageName?.toString() ?: ""
@@ -411,7 +411,7 @@ class TicketGrabbingAccessibilityService : AccessibilityService() {
                                 "检测到：$currentPackage\n" +
                                 "请打开大麦 App 的演出详情页"
                     )
-                    return@launch
+                    return
                 }
         if (rootNode == null || detectCurrentPage(rootNode) != PageType.DETAIL) {
             throw IllegalStateException("未成功进入详情页")
@@ -446,7 +446,7 @@ class TicketGrabbingAccessibilityService : AccessibilityService() {
                                 "请打开大麦 App 的演出详情页\n" +
                                 "提示：分屏模式下请确保大麦 App 已打开"
                     )
-                    return@launch
+                    return
                 }
 
                 val currentPackage = rootNode.packageName?.toString() ?: ""
@@ -459,7 +459,7 @@ class TicketGrabbingAccessibilityService : AccessibilityService() {
                                 "检测到：$currentPackage\n" +
                                 "请打开大麦 App 的演出详情页"
                     )
-                    return@launch
+                    return
                 }
             try {
                 if (rootNode != null && detectCurrentPage(rootNode) != PageType.DETAIL) {
@@ -901,7 +901,7 @@ class TicketGrabbingAccessibilityService : AccessibilityService() {
                                 "请打开大麦 App 的演出详情页\n" +
                                 "提示：分屏模式下请确保大麦 App 已打开"
                     )
-                    return@launch
+                    return
                 }
 
                 val currentPackage = rootNode.packageName?.toString() ?: ""
@@ -914,7 +914,7 @@ class TicketGrabbingAccessibilityService : AccessibilityService() {
                                 "检测到：$currentPackage\n" +
                                 "请打开大麦 App 的演出详情页"
                     )
-                    return@launch
+                    return
                 }
                 // ✅ 优化：增强页面检测，降低严格度
                 if (!isOnDamaiDetailPage(rootNode)) {
@@ -925,7 +925,7 @@ class TicketGrabbingAccessibilityService : AccessibilityService() {
                         "请确保已进入演出详情页\n" +
                                 "提示：页面需要包含「立即购买」或「演出介绍」等元素"
                     )
-                    return@launch
+                    return
                 }
 
                 Log.i(TAG, "✅ 页面检测通过，开始抓取信息...")
