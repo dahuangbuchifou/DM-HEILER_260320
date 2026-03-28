@@ -39,6 +39,7 @@ _记录所有编译错误及解决方案，避免重复踩坑_
 | 24 | `app/build.gradle` | 19 | 版本不一致 | Kotlin stdlib (1.9.22) 与插件 (1.9.25) 版本不匹配 | 统一为 1.9.25 | ✅ |
 | 25 | `ScreenAnalyzer.kt` | 244/273 | 结构错误 | 第 244 行的 `}` 提前闭合 class，导致 `calculateClickCenter()` 和 `close()` 函数成为"孤儿" | 删除提前闭合的 `}`，将函数移回 class 内部，data class 移到文件末尾 | ✅ |
 | 26 | `TicketGrabbingAccessibilityService.kt` | 401/414/449/462 | 未解析引用 | `return@launch` 在普通函数中使用，但代码不在 `launch` 协程作用域内 | 改为 `return`（这些代码在 `suspend fun` 中，不是 `launch {}` 块内） | ✅ |
+| 27 | `TicketGrabbingAccessibilityService.kt` | 876/889/900/906 | 多重错误 | ① `return` 在 `launch {}` 块内不允许 ② `AccessibilityNodeInfo?` 类型不匹配 | ① 改回 `return@launch` ② 使用 `rootNode!!` 非空断言 ③ 删除重复插入的代码 | ✅ |
 
 ---
 
@@ -428,5 +429,89 @@ suspend fun myFunction() {
 
 ---
 
-**最后更新：** 2026-03-28 19:35  
+### 第 6 轮：代码插入错误与协程返回修复（2026-03-28 19:45）
+
+#### 错误模式 7：代码重复插入与协程返回混淆
+
+**错误信息（7 个错误）：**
+```
+e: 'return' is not allowed here :904
+e: Only safe (?) or non-null asserted (!!) calls are allowed on a nullable receiver :907
+e: 'return' is not allowed here :917
+e: Type mismatch: inferred type is AccessibilityNodeInfo? but AccessibilityNodeInfo was expected :920
+e: Type mismatch: inferred type is AccessibilityNodeInfo? but AccessibilityNodeInfo was expected :922
+e: 'return' is not allowed here :928
+e: Type mismatch: inferred type is AccessibilityNodeInfo? but AccessibilityNodeInfo was expected :934
+```
+
+**原因分析：**
+1. **代码重复插入** - 分屏检测代码错误插入到 `preparePhase` 函数中（与 `startExtractingConcertInfo` 逻辑重复）
+2. **协程返回混淆** - 第 5 轮修复时将所有 `return@launch` 改为 `return`，但 `startExtractingConcertInfo` 中的代码在 `launch {}` 块内
+3. **类型不匹配** - `findDamaiRootNode()` 返回 `AccessibilityNodeInfo?`，但 `extractFromDetailPage()` 期望非空类型
+
+**修复方案：**
+```kotlin
+// ❌ 错误 1: preparePhase 中插入了重复的分屏检测代码
+private suspend fun preparePhase(task: TicketTask) {
+    // ... 搜索和进入详情页 ...
+    if (!enterConcertDetail(task.concertKeyword)) {
+        throw IllegalStateException("未找到演出")
+    }
+    
+    // ❌ 这些代码不应该在这里（重复且 rootNode 未定义）
+    val rootNode = findDamaiRootNode()
+    if (rootNode == null) { return }
+    if (rootNode == null || detectCurrentPage(rootNode) != PageType.DETAIL) {
+        throw IllegalStateException("未成功进入详情页")
+    }
+}
+
+// ✅ 修复 1: 删除重复插入的代码（28 行）
+private suspend fun preparePhase(task: TicketTask) {
+    // ... 搜索和进入详情页 ...
+    if (!enterConcertDetail(task.concertKeyword)) {
+        throw IllegalStateException("未找到演出")
+    }
+    humanBehaviorSimulator.simulateThinkingTime(2000L, 3000L)
+    
+    Log.i(TAG, "✓ 准备完成，进入就绪状态")
+}
+
+// ❌ 错误 2: launch {} 块内使用 return
+fun startExtractingConcertInfo() {
+    coroutineScope.launch {
+        val rootNode = findDamaiRootNode()
+        if (rootNode == null) {
+            return  // ❌ 错误：在 launch {} 块内
+        }
+        val info = extractFromDetailPage(rootNode)  // ❌ 类型不匹配
+    }
+}
+
+// ✅ 修复 2 & 3: 使用 return@launch 和 rootNode!!
+fun startExtractingConcertInfo() {
+    coroutineScope.launch {
+        val rootNode = findDamaiRootNode()
+        if (rootNode == null) {
+            return@launch  // ✅ 正确
+        }
+        val info = extractFromDetailPage(rootNode!!)  // ✅ 非空断言
+    }
+}
+```
+
+**教训：**
+1. **代码插入要谨慎** - 避免在错误的函数中插入重复逻辑
+2. **协程作用域要分清** - `launch {}` 块内用 `return@launch`，普通函数用 `return`
+3. **可空类型要处理** - 使用 `!!` 非空断言或 `?.` 安全调用
+4. **批量修改要验证** - 第 5 轮的 `sed` 批量替换没有区分上下文
+
+**预防：**
+- 插入代码前确认函数职责和上下文
+- 批量修改后逐处验证
+- 使用 IDE 的查找引用功能确认修改范围
+
+---
+
+**最后更新：** 2026-03-28 19:45  
 **状态：** 所有已知错误已修复
