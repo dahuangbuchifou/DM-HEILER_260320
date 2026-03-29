@@ -153,7 +153,60 @@ git push origin main
 
 | 日期 | 内容 | 状态 |
 |------|------|------|
+| 2026-03-29 22:15 | 修复时间同步 + 数据库迁移 + 分屏检测 | ✅ 完成 |
 | 2026-03-29 15:47 | 建立协作流程，数据库版本升级 | ✅ 完成 |
+
+---
+
+## ⚠️ 重要规范：时间同步
+
+**每次修改代码后必须同步更新时间！**
+
+### 需要同步的位置
+
+1. **TicketTask.kt** - 头部注释
+   ```kotlin
+   // 📅 最新修复：2026-03-29 22:15
+   ```
+
+2. **MainActivity.kt** - 版本显示
+   ```kotlin
+   versionUpdateTimeText.text = "📅 版本更新时间：2026-03-29 22:15"
+   ```
+
+### 检查清单
+
+每次提交前必须确认：
+- [ ] TicketTask.kt 头部时间已更新
+- [ ] MainActivity.kt 版本显示已更新
+- [ ] 两个时间保持一致
+- [ ] Commit message 包含时间戳
+
+---
+
+## 🐛 已修复问题记录
+
+### 2026-03-29 22:15 - 分屏模式大麦检测失败
+
+**问题：** 分屏模式下，焦点在助手 App 时，"从大麦抓取"功能提示"找不到大麦"
+
+**原因：** `extractTaskInfoFromDamaiPage()` 使用 `rootInActiveWindow` 检测，但焦点在助手时检测不到大麦
+
+**解决：** 改用 `findDamaiRootNode()` 方法，支持分屏模式检测
+
+**修改文件：**
+- `app/src/main/java/com/damaihelper/service/TicketGrabbingAccessibilityService.kt`
+
+### 2026-03-29 22:15 - 数据库迁移重复字段异常
+
+**问题：** `duplicate column name: audienceName`
+
+**原因：** 用户数据库已经是 version 2，迁移时重复添加字段
+
+**解决：** 在 `MIGRATION_1_2` 中为每个 `ALTER TABLE` 添加 try-catch
+
+**修改文件：**
+- `app/src/main/java/com/damaihelper/model/TaskDatabase.kt`
 
 ---
 
