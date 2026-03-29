@@ -1,173 +1,160 @@
-# 📋 发布检查清单
+# 📋 DM-HEILER 开发协作 Checklist
 
-_防止遗忘版本时间同步和开发日志更新_
-
----
-
-## ✅ 每次提交前检查（必须完成）
-
-### 1. 版本时间同步（三位置）
-
-- [ ] **TicketTask.kt** 头部注释
-  ```kotlin
-  // 📅 最新修复：2026-03-28 22:20
-  ```
-
-- [ ] **MainActivity.kt** updateVersionTime()
-  ```kotlin
-  versionUpdateTimeText.text = "📅 版本更新时间：2026-03-28 22:20"
-  ```
-
-- [ ] **Git commit** 标注版本号和时间
-  ```bash
-  git commit -m "🐛 Fix: xxx (v1.2.1 2026-03-28 22:20)"
-  ```
-
-### 2. 开发日志更新
-
-- [ ] **docs/开发日志.md** 添加修复记录
-  - 日期标题
-  - 问题描述
-  - 修复方案
-  - 版本号
-
-- [ ] **memory/YYYY-MM-DD.md** 记录重要变更
-  - 日期文件（如：memory/2026-03-28.md）
-  - 重要功能/修复摘要
-
-### 3. COMPILER_ERRORS_LOG.md（如有编译错误）
-
-- [ ] 更新错误汇总表
-- [ ] 添加详细修复记录
-- [ ] 总结错误模式和教训
+_最后更新：2026-03-29 15:47_
 
 ---
 
-## 🏷️ 版本号规则
+## 🔄 代码交流流程（基础方法）
 
-```
-v主版本。次版本.修订版本
-  ↑      ↑      ↑
-  |      |      └─ Bug 修复
-  |      └─ 功能增加
-  └─ 重大变更
+这是我们与 AI 助手协作的标准流程，**后期也这么做**：
 
-示例：
-v1.0.0 - 初始版本
-v1.1.0 - 添加预约 + 秒杀模式
-v1.1.1 - 修复 audienceName 字段缺失
-v1.1.2 - 修复 getTaskById 类型不匹配
-```
+### 步骤 1：AI 修改代码
+- [ ] AI 在本地 workspace 修改代码
+- [ ] AI 验证修改内容正确
+- [ ] AI 提交到 Git 并推送到 GitHub
 
----
+### 步骤 2：开发者 Pull 代码
+- [ ] 在 Android Studio 中执行 `git pull`
+- [ ] 同步最新代码到本地
+- [ ] 检查版本更新时间和变更内容
 
-## 🕐 时间格式
+### 步骤 3：编译与测试
+- [ ] 重新编译项目（Build → Rebuild Project）
+- [ ] 安装到测试设备
+- [ ] 验证功能是否正常
 
-- **日期：** `2026-03-28`
-- **时间：** `22:20`
-- **完整：** `2026-03-28 22:20`
-
----
-
-## 📝 Commit 消息模板
-
-### Bug 修复
-```
-🐛 Fix: 修复 xxx 问题
-
-问题描述：
-原因分析：
-修复方案：
-
-版本：v1.1.2 2026-03-28 22:20
-
-[ci skip]
-```
-
-### 新功能
-```
-🆕 Feature: 添加 xxx 功能
-
-功能说明：
-用户需求：
-实现方案：
-
-版本：v1.1.0 2026-03-28 21:45
-
-[ci skip]
-```
-
-### 文档更新
-```
-📝 Docs: 更新 xxx 文档
-
-更新内容：
-
-版本：v1.1.0 2026-03-28 21:45
-
-[ci skip]
-```
+### 步骤 4：反馈与迭代
+- [ ] 如有问题，提供 logcat 日志
+- [ ] AI 分析日志并修复
+- [ ] 重复步骤 1-3 直到问题解决
 
 ---
 
-## 🚀 快速操作流程
+## 📝 数据库版本升级记录
 
-### 步骤 1：修改代码
-```bash
-# 编辑文件...
+### 2026-03-29 15:47 - Version 1 → 2
+
+**原因：** 添加新字段后 Room 检测到 schema 变化，需要升级版本号并添加迁移策略
+
+**变更内容：**
+- `version`: 1 → 2
+- 添加 `MIGRATION_1_2` 迁移对象
+- 新增字段：
+  - `audienceName` - 用于自动选择观演人
+  - `selectedPrice` - 用于步骤 2 选择票档
+  - `sessionId` - 指定场次 ID
+  - `priceTiers` - 多票档备选
+  - `audienceIndex` - 观影人索引
+  - `grabMode` - 抢票模式（normal/snap）
+  - `quantity` - 票数（兼容字段）
+
+**修改文件：**
+- `app/src/main/java/com/damaihelper/model/TaskDatabase.kt`
+
+**测试验证：**
+- [ ] 清除旧数据后新建任务 → 保存成功
+- [ ] 旧版本升级后数据不丢失 → 待验证
+- [ ] Database Inspector 显示所有字段 → 待验证
+
+---
+
+## 🧪 测试 Checklist
+
+### 阶段 1：任务创建与保存
+- [ ] 输入演出关键词
+- [ ] 选择抢票日期和时间
+- [ ] 输入票价关键词
+- [ ] 输入观演人姓名
+- [ ] 点击保存按钮
+- [ ] 验证提示"✅ 任务保存成功"
+- [ ] 验证主界面显示新任务
+- [ ] 验证 Database Inspector 有数据
+
+### 阶段 2：任务列表显示
+- [ ] 任务卡片格式正确
+- [ ] 日期显示为 MM-dd HH:mm 格式
+- [ ] 观众姓名显示正确
+- [ ] 票档信息显示正确
+- [ ] 多任务排序正确
+
+### 阶段 3：数据库迁移验证
+- [ ] 旧版本用户升级后数据不丢失
+- [ ] 新字段有默认值
+- [ ] 无崩溃、无异常
+
+---
+
+## 📊 Git 操作规范
+
+### 提交信息格式
+```
+<emoji> <类型>: <简短描述>
+
+- 详细变更 1
+- 详细变更 2
+- 详细变更 3
 ```
 
-### 步骤 2：更新时间（三位置）
-```bash
-# 1. TicketTask.kt 头部
-# 2. MainActivity.kt updateVersionTime()
-# 3. 准备 commit 消息
-```
+### 常用 Emoji
+- 📅 日期相关/版本更新
+- 🔧 修复/配置
+- 🆕 新功能
+- 🐛 Bug 修复
+- 📝 文档
+- 🧪 测试
+- 🚀 发布
 
-### 步骤 3：更新日志
-```bash
-# 1. docs/开发日志.md 添加记录
-# 2. memory/2026-03-28.md 追加内容
-```
-
-### 步骤 4：提交推送
+### 示例
 ```bash
 git add -A
-git commit -m "🐛 Fix: xxx (v1.1.2 2026-03-28 22:20)"
+git commit -m "📅 数据库版本升级：v1 → v2
+
+- 添加 MIGRATION_1_2 迁移策略
+- 新增 7 个字段（audienceName, selectedPrice 等）
+- 支持旧版本数据平滑升级"
 git push origin main
 ```
 
 ---
 
-## 💡 自动化建议（未来实现）
+## 🛠️ 常见问题速查
 
-### 1. Git Hook（pre-commit）
-```bash
-#!/bin/bash
-# 检查是否更新了版本时间
-if ! grep -q "最新修复：$(date +%Y-%m-%d)" app/src/main/java/com/damaihelper/model/TicketTask.kt; then
-    echo "❌ 请更新 TicketTask.kt 头部注释中的日期"
-    exit 1
-fi
-```
+### 问题 1：Room cannot verify data integrity
+**原因：** Schema 变化但版本号未更新  
+**解决：** version++ 并添加 Migration
 
-### 2. Gradle Task
-```groovy
-task updateVersionTime {
-    doLast {
-        def timestamp = new Date().format('YYYY-MM-dd HH:mm')
-        // 自动更新文件中的版本时间
-    }
-}
-```
+### 问题 2：数据库是空的
+**原因：** 保存逻辑被注释掉  
+**解决：** 检查 `saveTask()` 方法中的 `taskDao.insertTask(task)`
 
-### 3. IDE Live Template
-```
-// 📅 最新修复：$DATE$
-// 🔧 修复内容：$CONTENT$
-```
+### 问题 3：列表不显示
+**原因：** 使用了假数据  
+**解决：** 从数据库加载真实数据
+
+### 问题 4：编译错误
+**原因：** 依赖/导入缺失  
+**解决：** 检查 import 语句和 Gradle 配置
 
 ---
 
-**创建日期：** 2026-03-28 22:20  
-**最后更新：** 2026-03-28 22:20
+## 📁 关键文件位置
+
+| 文件 | 路径 | 用途 |
+|------|------|------|
+| TaskDatabase.kt | `app/src/main/java/com/damaihelper/model/` | 数据库配置 |
+| TicketTask.kt | `app/src/main/java/com/damaihelper/model/` | 数据模型 |
+| TaskDao.kt | `app/src/main/java/com/damaihelper/model/` | 数据访问层 |
+| TaskConfigActivity.kt | `app/src/main/java/com/damaihelper/` | 任务配置页面 |
+| MainActivity.kt | `app/src/main/java/com/damaihelper/` | 主界面 |
+
+---
+
+## 📞 协作记录
+
+| 日期 | 内容 | 状态 |
+|------|------|------|
+| 2026-03-29 15:47 | 建立协作流程，数据库版本升级 | ✅ 完成 |
+
+---
+
+_此文件由 AI 助手创建，用于记录开发协作流程和重要检查项_
