@@ -27,35 +27,63 @@ abstract class TaskDatabase : RoomDatabase() {
         // 🆕 数据库迁移：version 1 → 2
         private val MIGRATION_1_2 = object : Migration(1, 2) {
             override fun migrate(database: SupportSQLiteDatabase) {
-                // 添加新字段（如果不存在）
-                // audienceName: 用于自动选择观演人
-                database.execSQL(
-                    "ALTER TABLE ticket_tasks ADD COLUMN audienceName TEXT NOT NULL DEFAULT ''"
-                )
-                // selectedPrice: 用于步骤 2 选择票档
-                database.execSQL(
-                    "ALTER TABLE ticket_tasks ADD COLUMN selectedPrice TEXT NOT NULL DEFAULT ''"
-                )
-                // sessionId: 指定场次 ID
-                database.execSQL(
-                    "ALTER TABLE ticket_tasks ADD COLUMN sessionId TEXT NOT NULL DEFAULT ''"
-                )
-                // priceTiers: 多票档备选
-                database.execSQL(
-                    "ALTER TABLE ticket_tasks ADD COLUMN priceTiers TEXT NOT NULL DEFAULT ''"
-                )
-                // audienceIndex: 观影人索引
-                database.execSQL(
-                    "ALTER TABLE ticket_tasks ADD COLUMN audienceIndex INTEGER NOT NULL DEFAULT 1"
-                )
-                // grabMode: 抢票模式
-                database.execSQL(
-                    "ALTER TABLE ticket_tasks ADD COLUMN grabMode TEXT NOT NULL DEFAULT 'normal'"
-                )
-                // quantity: 票数（兼容字段）
-                database.execSQL(
-                    "ALTER TABLE ticket_tasks ADD COLUMN quantity INTEGER NOT NULL DEFAULT 1"
-                )
+                // 添加新字段（使用 try-catch 避免重复添加）
+                try {
+                    // audienceName: 用于自动选择观演人
+                    database.execSQL(
+                        "ALTER TABLE ticket_tasks ADD COLUMN audienceName TEXT NOT NULL DEFAULT ''"
+                    )
+                } catch (e: Exception) {
+                    // 字段已存在，忽略
+                }
+                try {
+                    // selectedPrice: 用于步骤 2 选择票档
+                    database.execSQL(
+                        "ALTER TABLE ticket_tasks ADD COLUMN selectedPrice TEXT NOT NULL DEFAULT ''"
+                    )
+                } catch (e: Exception) {
+                    // 字段已存在，忽略
+                }
+                try {
+                    // sessionId: 指定场次 ID
+                    database.execSQL(
+                        "ALTER TABLE ticket_tasks ADD COLUMN sessionId TEXT NOT NULL DEFAULT ''"
+                    )
+                } catch (e: Exception) {
+                    // 字段已存在，忽略
+                }
+                try {
+                    // priceTiers: 多票档备选
+                    database.execSQL(
+                        "ALTER TABLE ticket_tasks ADD COLUMN priceTiers TEXT NOT NULL DEFAULT ''"
+                    )
+                } catch (e: Exception) {
+                    // 字段已存在，忽略
+                }
+                try {
+                    // audienceIndex: 观影人索引
+                    database.execSQL(
+                        "ALTER TABLE ticket_tasks ADD COLUMN audienceIndex INTEGER NOT NULL DEFAULT 1"
+                    )
+                } catch (e: Exception) {
+                    // 字段已存在，忽略
+                }
+                try {
+                    // grabMode: 抢票模式
+                    database.execSQL(
+                        "ALTER TABLE ticket_tasks ADD COLUMN grabMode TEXT NOT NULL DEFAULT 'normal'"
+                    )
+                } catch (e: Exception) {
+                    // 字段已存在，忽略
+                }
+                try {
+                    // quantity: 票数（兼容字段）
+                    database.execSQL(
+                        "ALTER TABLE ticket_tasks ADD COLUMN quantity INTEGER NOT NULL DEFAULT 1"
+                    )
+                } catch (e: Exception) {
+                    // 字段已存在，忽略
+                }
             }
         }
 

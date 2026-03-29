@@ -801,34 +801,46 @@ class TicketGrabbingAccessibilityService : AccessibilityService() {
     /**
      * 供外部调用的信息抓取方法
      */
+    /**
+     * 从大麦 App 同步演出信息到助手
+     * ✅ 修复：2026-03-29 22:15 - 支持分屏模式检测
+     */
     fun extractTaskInfoFromDamaiPage(): Map<String, String> {
-        val rootNode = rootInActiveWindow ?: return emptyMap()
-        if (rootNode.packageName != "cn.damai") {
-            Log.w(TAG, "当前不在大麦 App 界面，无法提取信息")
+        // ✅ 修复：使用 findDamaiRootNode() 支持分屏模式
+        val rootNode = findDamaiRootNode()
+        
+        if (rootNode == null) {
+            Log.w(TAG, "❌ 未找到大麦 App 窗口（分屏模式下请确保大麦已打开）")
+            return emptyMap()
+        }
+        
+        val currentPackage = rootNode.packageName?.toString() ?: ""
+        if (!isDamaiApp(currentPackage)) {
+            Log.w(TAG, "当前不在大麦 App 界面：$currentPackage")
             return emptyMap()
         }
 
+        Log.i(TAG, "✅ 找到大麦 App，开始提取信息...")
         val extractedInfo = mutableMapOf<String, String>()
 
         // 1. 提取演出名称 (通常是页面顶部最大的 TextView)
-        // 尝试通过 ID 或最大的文本节点来获取
-        val titleNode = NodeUtils.findNodeByFuzzyText(rootNode, "演出", 0.1) // 尝试找一个大的文本节点
+        val titleNode = NodeUtils.findNodeByFuzzyText(rootNode, "演出", 0.1)
         extractedInfo["concertKeyword"] = titleNode?.text?.toString() ?: "未知演出"
 
-        // 2. 提取抢票日期和时间 (通常在详情页的特定区域)
-        // 这是一个难点，需要依赖特定的文本格式或 ID。这里使用通用文本匹配。
+        // 2. 提取抢票日期和时间
         val dateNode = NodeUtils.findNodeByFuzzyText(rootNode, "场次", 0.5)
         val dateText = dateNode?.parent?.getChild(dateNode.parent.childCount - 1)?.text?.toString()
         extractedInfo["grabDate"] = dateText ?: "未知日期"
 
-        // 3. 提取票价信息 (通常在详情页的特定区域)
+        // 3. 提取票价信息
         val priceNode = NodeUtils.findNodeByFuzzyText(rootNode, "价格", 0.5)
         val priceText = priceNode?.parent?.getChild(priceNode.parent.childCount - 1)?.text?.toString()
         extractedInfo["ticketPriceKeyword"] = priceText ?: "未知票价"
 
-        Log.i(TAG, "M4 模块：提取到的信息: $extractedInfo")
+        Log.i(TAG, "M4 模块：提取到的信息：$extractedInfo")
         return extractedInfo
     }
+
 
     private fun detectCaptchaNode(rootNode: AccessibilityNodeInfo): AccessibilityNodeInfo? {
         val keywords = listOf("验证码", "captcha", "verification")
