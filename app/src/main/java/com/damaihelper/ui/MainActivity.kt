@@ -13,9 +13,12 @@ import android.content.IntentFilter
 import android.os.Bundle
 import android.provider.Settings
 import android.util.Log
+import android.view.LayoutInflater
 import android.widget.Button
+import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -218,8 +221,8 @@ class MainActivity : AppCompatActivity() {
      * ⚠️ 注意：每次修改代码后必须同步更新时间！（CHECKLIST.md 规范）
      */
     private fun updateVersionTime() {
-        // 格式：2026-03-30 21:05
-        versionUpdateTimeText.text = "📅 版本更新时间：2026-03-30 21:05"
+        // 格式：2026-03-30 21:25
+        versionUpdateTimeText.text = "📅 版本更新时间：2026-03-30 21:25"
     }
 
     private fun setupListeners() {
