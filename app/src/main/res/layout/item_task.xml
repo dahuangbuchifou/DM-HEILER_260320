@@ -59,30 +59,37 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/task_details">
 
-            <Button
-                android:id="@+id/edit_button"
-                style="@style/Widget.AppCompat.Button.Borderless.Colored"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/edit" />
-
+            <!-- 🆕 删除按钮（左侧，红色，明显） -->
             <Button
                 android:id="@+id/delete_button"
-                style="@style/Widget.AppCompat.Button.Borderless.Colored"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/delete" />
+                android:text="🗑️ 删除"
+                android:textSize="14sp"
+                android:backgroundTint="@color/status_failed"
+                android:textColor="@android:color/white" />
 
             <View
                 android:layout_width="0dp"
                 android:layout_height="0dp"
                 android:layout_weight="1" />
 
+            <!-- 编辑按钮 -->
+            <Button
+                android:id="@+id/edit_button"
+                style="@style/Widget.AppCompat.Button.Borderless.Colored"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="✏️ 编辑"
+                android:textSize="14sp" />
+
+            <!-- 启动/停止按钮 -->
             <Button
                 android:id="@+id/start_stop_button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/start_grabbing" />
+                android:text="@string/start_grabbing"
+                android:textSize="14sp" />
         </LinearLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
