@@ -221,8 +221,8 @@ class MainActivity : AppCompatActivity() {
      * ⚠️ 注意：每次修改代码后必须同步更新时间！（CHECKLIST.md 规范）
      */
     private fun updateVersionTime() {
-        // 格式：2026-03-30 22:25
-        versionUpdateTimeText.text = "📅 版本更新时间：2026-03-30 22:25"
+        // 格式：2026-03-30 22:35
+        versionUpdateTimeText.text = "📅 版本更新时间：2026-03-30 22:35"
     }
 
     private fun setupListeners() {
@@ -232,6 +232,12 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        // 🆕 智能抢票按钮
+        val btnSmartGrab: Button = findViewById(R.id.btn_smart_grab)
+        btnSmartGrab.setOnClickListener {
+            startActivity(Intent(this, SmartGrabActivity::class.java))
+        }
+        
         // 🆕 观众管理按钮
         val btnAudienceManager: Button = findViewById(R.id.btn_audience_manager)
         btnAudienceManager.setOnClickListener {

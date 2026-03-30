@@ -83,6 +83,17 @@
                 android:value=".ui.MainActivity" />
         </activity>
 
+        <!-- 🆕 智能抢票界面 -->
+        <activity
+            android:name=".ui.SmartGrabActivity"
+            android:exported="false"
+            android:label="智能抢票"
+            android:parentActivityName=".ui.MainActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".ui.MainActivity" />
+        </activity>
+
         <!-- 无障碍服务 -->
         <service
             android:name=".service.TicketGrabbingAccessibilityService"
