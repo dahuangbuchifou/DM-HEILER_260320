@@ -1,12 +1,51 @@
-# 📋 DM-HEILER 开发协作 Checklist
+# 📋 开发协作 Checklist
 
-_最后更新：2026-03-29 15:47_
+_开发规范、时间同步、编译要求、Git 流程_
+
+**最后更新：** 2026-03-30 09:45  
+**当前版本：** v1.3.0
 
 ---
 
-## 🔄 代码交流流程（基础方法）
+## ⏰ 时间同步规范（重要！）
 
-这是我们与 AI 助手协作的标准流程，**后期也这么做**：
+### 三位置同步原则
+
+每次代码调整后，**必须**同步更新以下三处时间：
+
+| 位置 | 文件 | 内容 | 示例 |
+|------|------|------|------|
+| 1️⃣ | `app/src/main/java/com/damaihelper/model/TicketTask.kt` | 文件头部注释 | `最新修复：2026-03-30 09:00` |
+| 2️⃣ | `app/src/main/java/com/damaihelper/MainActivity.kt` | 界面版本显示 | `📅 版本更新时间：2026-03-30 09:00` |
+| 3️⃣ | Git Commit | 提交信息 | `🎫 信息抓取增强版 v1.3.0 (2026-03-30 09:00)` |
+
+### 时间格式
+- **日期：** `2026-03-30`
+- **时间：** `09:00`
+- **完整：** `2026-03-30 09:00`
+
+### 检查清单
+提交前必须检查：
+- [ ] TicketTask.kt 头部注释更新时间
+- [ ] MainActivity.kt updateVersionTime() 更新时间
+- [ ] CHANGELOG.md 添加版本记录
+- [ ] FIX_LOG.md 添加修复记录（如有）
+- [ ] docs/开发日志.md 添加开发记录
+- [ ] Git commit 标注版本号和时间
+
+---
+
+##  版本号规则
+
+| 类型 | 格式 | 用途 | 示例 |
+|------|------|------|------|
+| 大版本 | vX.0.0 | 重大功能重构 | v2.0.0 |
+| 小版本 | v1.X.0 | 功能增加 | v1.3.0 |
+| 修复版本 | v1.1.X | Bug 修复 | v1.2.1 |
+
+---
+
+## 🔄 Git 协作流程
 
 ### 步骤 1：AI 修改代码
 - [ ] AI 在本地 workspace 修改代码
@@ -30,184 +69,112 @@ _最后更新：2026-03-29 15:47_
 
 ---
 
-## 📝 数据库版本升级记录
+## 🛠️ 编译要求
 
-### 2026-03-29 15:47 - Version 1 → 2
+### 环境配置
+- **Android Gradle Plugin:** 8.7.0
+- **Kotlin:** 1.9.25
+- **JDK:** 17+
+- **Min SDK:** 26 (Android 8.0)
+- **Target SDK:** 34 (Android 14)
 
-**原因：** 添加新字段后 Room 检测到 schema 变化，需要升级版本号并添加迁移策略
-
-**变更内容：**
-- `version`: 1 → 2
-- 添加 `MIGRATION_1_2` 迁移对象
-- 新增字段：
-  - `audienceName` - 用于自动选择观演人
-  - `selectedPrice` - 用于步骤 2 选择票档
-  - `sessionId` - 指定场次 ID
-  - `priceTiers` - 多票档备选
-  - `audienceIndex` - 观影人索引
-  - `grabMode` - 抢票模式（normal/snap）
-  - `quantity` - 票数（兼容字段）
-
-**修改文件：**
-- `app/src/main/java/com/damaihelper/model/TaskDatabase.kt`
-
-**测试验证：**
-- [ ] 清除旧数据后新建任务 → 保存成功
-- [ ] 旧版本升级后数据不丢失 → 待验证
-- [ ] Database Inspector 显示所有字段 → 待验证
-
----
-
-## 🧪 测试 Checklist
-
-### 阶段 1：任务创建与保存
-- [ ] 输入演出关键词
-- [ ] 选择抢票日期和时间
-- [ ] 输入票价关键词
-- [ ] 输入观演人姓名
-- [ ] 点击保存按钮
-- [ ] 验证提示"✅ 任务保存成功"
-- [ ] 验证主界面显示新任务
-- [ ] 验证 Database Inspector 有数据
-
-### 阶段 2：任务列表显示
-- [ ] 任务卡片格式正确
-- [ ] 日期显示为 MM-dd HH:mm 格式
-- [ ] 观众姓名显示正确
-- [ ] 票档信息显示正确
-- [ ] 多任务排序正确
-
-### 阶段 3：数据库迁移验证
-- [ ] 旧版本用户升级后数据不丢失
-- [ ] 新字段有默认值
-- [ ] 无崩溃、无异常
-
----
-
-## 📊 Git 操作规范
-
-### 提交信息格式
-```
-<emoji> <类型>: <简短描述>
-
-- 详细变更 1
-- 详细变更 2
-- 详细变更 3
-```
-
-### 常用 Emoji
-- 📅 日期相关/版本更新
-- 🔧 修复/配置
-- 🆕 新功能
-- 🐛 Bug 修复
-- 📝 文档
-- 🧪 测试
-- 🚀 发布
-
-### 示例
+### 编译命令
 ```bash
-git add -A
-git commit -m "📅 数据库版本升级：v1 → v2
+# 清理并编译
+./gradlew clean assembleDebug
 
-- 添加 MIGRATION_1_2 迁移策略
-- 新增 7 个字段（audienceName, selectedPrice 等）
-- 支持旧版本数据平滑升级"
-git push origin main
+# 编译 Release
+./gradlew assembleRelease
+
+# 运行测试
+./gradlew test
+```
+
+### 编译检查
+- [ ] 0 错误
+- [ ] 警告 < 50
+- [ ] APK 生成成功
+- [ ] 签名正确
+
+---
+
+## 📝 文档规范
+
+### 核心文档
+| 文档 | 用途 | 位置 |
+|------|------|------|
+| **CHECKLIST.md** | 开发规范、时间同步 | 根目录 |
+| **CHANGELOG.md** | 版本升级记录 | 根目录 |
+| **FIX_LOG.md** | 代码修复记录 | 根目录 |
+| **docs/开发日志.md** | 每日开发记录 | docs/ |
+| **docs/使用指南.md** | 用户使用指南 | docs/ |
+| **docs/技术文档.md** | 技术实现细节 | docs/ |
+
+### 文档更新原则
+1. **开发日志** - 每日记录，按日期更新
+2. **版本日志** - 每次版本升级更新
+3. **修复日志** - 每次 Bug 修复更新
+4. **使用指南** - 功能变更后更新
+
+---
+
+## 🔒 安全规范
+
+### 支付安全（重要！）
+- ⚠️ **到达付款界面后必须手动完成支付**
+- ⚠️ 自动操作在付款界面自动停止
+- ⚠️ 不存储任何支付信息
+- ⚠️ 不访问支付密码输入框
+
+### 权限使用
+- **无障碍服务** - 仅用于模拟点击
+- **截屏权限** - 仅用于图像识别
+- **前台服务** - 仅用于保活
+
+### 数据保护
+- 本地数据加密存储
+- 不上传用户隐私数据
+- 定期清理缓存
+
+---
+
+## 📊 数据库版本
+
+| 版本 | 日期 | 变更 |
+|------|------|------|
+| v2 | 2026-03-29 | 添加 sessionId, priceTiers, audienceIndex, grabMode |
+| v1 | 2026-03-20 | 初始版本 |
+
+### 迁移策略
+```kotlin
+// 添加新字段时使用 try-catch 避免重复添加
+try {
+    database.execSQL("ALTER TABLE ticket_tasks ADD COLUMN xxx TEXT")
+} catch (e: Exception) {
+    Log.w(TAG, "字段已存在，跳过")
+}
 ```
 
 ---
 
-## 🛠️ 常见问题速查
+## ✅ 发布检查清单
 
-### 问题 1：Room cannot verify data integrity
-**原因：** Schema 变化但版本号未更新  
-**解决：** version++ 并添加 Migration
+### 每次发布前检查
+- [ ] 时间同步（三位置）
+- [ ] 版本号更新
+- [ ] CHANGELOG.md 更新
+- [ ] FIX_LOG.md 更新（如有修复）
+- [ ] docs/开发日志.md 更新
+- [ ] 编译无错误
+- [ ] 功能测试通过
+- [ ] Git 提交并推送
 
-### 问题 2：数据库是空的
-**原因：** 保存逻辑被注释掉  
-**解决：** 检查 `saveTask()` 方法中的 `taskDao.insertTask(task)`
-
-### 问题 3：列表不显示
-**原因：** 使用了假数据  
-**解决：** 从数据库加载真实数据
-
-### 问题 4：编译错误
-**原因：** 依赖/导入缺失  
-**解决：** 检查 import 语句和 Gradle 配置
-
----
-
-## 📁 关键文件位置
-
-| 文件 | 路径 | 用途 |
-|------|------|------|
-| TaskDatabase.kt | `app/src/main/java/com/damaihelper/model/` | 数据库配置 |
-| TicketTask.kt | `app/src/main/java/com/damaihelper/model/` | 数据模型 |
-| TaskDao.kt | `app/src/main/java/com/damaihelper/model/` | 数据访问层 |
-| TaskConfigActivity.kt | `app/src/main/java/com/damaihelper/` | 任务配置页面 |
-| MainActivity.kt | `app/src/main/java/com/damaihelper/` | 主界面 |
+### 发布后检查
+- [ ] GitHub 仓库已更新
+- [ ] 开发者已 Pull 最新代码
+- [ ] 测试设备已安装新版本
+- [ ] 功能验证通过
 
 ---
 
-## 📞 协作记录
-
-| 日期 | 内容 | 状态 |
-|------|------|------|
-| 2026-03-29 22:15 | 修复时间同步 + 数据库迁移 + 分屏检测 | ✅ 完成 |
-| 2026-03-29 15:47 | 建立协作流程，数据库版本升级 | ✅ 完成 |
-
----
-
-## ⚠️ 重要规范：时间同步
-
-**每次修改代码后必须同步更新时间！**
-
-### 需要同步的位置
-
-1. **TicketTask.kt** - 头部注释
-   ```kotlin
-   // 📅 最新修复：2026-03-29 22:15
-   ```
-
-2. **MainActivity.kt** - 版本显示
-   ```kotlin
-   versionUpdateTimeText.text = "📅 版本更新时间：2026-03-29 22:15"
-   ```
-
-### 检查清单
-
-每次提交前必须确认：
-- [ ] TicketTask.kt 头部时间已更新
-- [ ] MainActivity.kt 版本显示已更新
-- [ ] 两个时间保持一致
-- [ ] Commit message 包含时间戳
-
----
-
-## 🐛 已修复问题记录
-
-### 2026-03-29 22:15 - 分屏模式大麦检测失败
-
-**问题：** 分屏模式下，焦点在助手 App 时，"从大麦抓取"功能提示"找不到大麦"
-
-**原因：** `extractTaskInfoFromDamaiPage()` 使用 `rootInActiveWindow` 检测，但焦点在助手时检测不到大麦
-
-**解决：** 改用 `findDamaiRootNode()` 方法，支持分屏模式检测
-
-**修改文件：**
-- `app/src/main/java/com/damaihelper/service/TicketGrabbingAccessibilityService.kt`
-
-### 2026-03-29 22:15 - 数据库迁移重复字段异常
-
-**问题：** `duplicate column name: audienceName`
-
-**原因：** 用户数据库已经是 version 2，迁移时重复添加字段
-
-**解决：** 在 `MIGRATION_1_2` 中为每个 `ALTER TABLE` 添加 try-catch
-
-**修改文件：**
-- `app/src/main/java/com/damaihelper/model/TaskDatabase.kt`
-
----
-
-_此文件由 AI 助手创建，用于记录开发协作流程和重要检查项_
+_最后更新：2026-03-30 09:45_
