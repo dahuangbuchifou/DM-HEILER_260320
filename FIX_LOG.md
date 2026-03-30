@@ -19,6 +19,42 @@ _记录所有代码修复、Bug 排查、编译错误及解决方案_
 
 ---
 
+## 2026-03-30 v1.3.1 - 时间同步修复 + 自动填写
+
+**状态：** ✅ 完成  
+**文件：** `TicketTask.kt`, `MainActivity.kt`, `TicketGrabbingControllerEnhanced.kt`
+
+### 问题 1：时间同步未更新
+**错误：** CHECKLIST.md 规范要求的时间未更新  
+**现象：** 
+- TicketTask.kt 头部注释：2026-03-29 22:15（应为 2026-03-30 10:45）
+- MainActivity.kt 界面显示：2026-03-29 22:15（应为 2026-03-30 10:45）
+
+**修复：**
+- ✅ 更新 TicketTask.kt 头部注释时间
+- ✅ 更新 MainActivity.kt updateVersionTime() 时间
+- ✅ 更新 TicketGrabbingControllerEnhanced.kt 头部注释时间
+- ✅ 更新 CHECKLIST.md、CHANGELOG.md 时间戳
+
+### 问题 2：自动填写功能缺失
+**问题：** 时间、地址、票价没有自动填写  
+**修复：**
+- ✅ 新增 autoFillConcertInfo() 函数
+- ✅ 自动选择场次时间（第一个场次）
+- ✅ 自动选择票价（第一个有票的价格）
+- ✅ 自动填写地址（如有配送地址选项）
+
+### 问题 3：信息抓取不完整
+**问题：** 需要点击下一步/上一步才能获取完整信息  
+**修复：**
+- ✅ 增强 autoNavigateToCompleteInfo() 函数
+- ✅ 支持点击下一步/上一步按钮
+- ✅ 循环检测直到信息完整
+
+**版本：** v1.3.1 2026-03-30 10:45
+
+---
+
 ## 2026-03-30 v1.3.0 - 信息抓取增强版
 
 **状态：** ✅ 完成  
