@@ -1,26 +1,34 @@
 // ============================================================================
-// 📅 最新修复：2026-03-30 11:45
+// 📅 最新修复：2026-03-30 13:00
 // 🔧 修复内容：
 //   - 🆕 完整信息抓取：演出标题、时间（多场次）、价格、场次、地点
 //   - 🆕 自动交互流程：预约抢票、确定、立即提交等按钮
 //   - 🆕 付款界面检测：到达付款界面自动停止
 //   - 🆕 多轮交互支持：检测信息不完整自动点击下一步/上一步（最多 5 轮）
 //   - 🆕 自动填写功能：支持时间、地址、票价自动填写
+//   - 🆕 自动搜索功能：剪贴板 + 粘贴实现文字输入
+//   - 🆕 重试机制：指数退避重试策略
+//   - 🆕 观众管理：预先配置观众信息
 //   - 🆕 详细日志记录：每个步骤的识别结果
 //   - 🐛 修复时间同步问题（CHECKLIST.md 规范要求）
 //   - 🆕 增强自动导航：多轮循环点击，支持上一步按钮
 //  说明：增强版图像识别抢票控制器 - 完整信息抓取 + 自动交互 + 自动填写
-//  版本：v1.3.2
+//  版本：v2.0.0
 // ============================================================================
 
 package com.damaihelper.core
 
 import android.accessibilityservice.AccessibilityService
 import android.accessibilityservice.GestureDescription
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
 import android.graphics.Path
 import android.graphics.Rect
 import android.util.Log
+import android.view.accessibility.AccessibilityNodeInfo
 import com.damaihelper.model.TicketTask
+import com.damaihelper.utils.ClipboardUtils
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -153,10 +161,15 @@ class TicketGrabbingControllerEnhanced(
                 }
 
                 // 步骤 2: 开始截屏
-                screenCapture.startCapture(fps = 2)  //  提高帧率到 2FPS
-                delay(2000)  // 等待截屏稳定
+                screenCapture.startCapture(fps = 5)  // 🆕 高帧率模式（5FPS）
+                delay(1000)  // 等待截屏稳定
 
-                // 🆕 步骤 3: 提取完整演出信息
+                // 🆕 步骤 3: 自动搜索演出
+                _stateFlow.value = GrabbingState.SEARCHING
+                searchConcert(task.concertKeyword)
+                delay(2000)  // 等待搜索结果加载
+
+                // 🆕 步骤 4: 提取完整演出信息
                 _stateFlow.value = GrabbingState.INFO_EXTRACTING
                 extractCompleteConcertInfo()
                 
@@ -479,6 +492,146 @@ class TicketGrabbingControllerEnhanced(
     }
 
     /**
+     * 🆕 自动搜索演出（剪贴板 + 粘贴）
+     */
+    private suspend fun searchConcert(keyword: String) {
+        Log.i(TAG, "🔍 自动搜索演出：$keyword")
+        
+        try {
+            // 1. 复制关键词到剪贴板
+            val clipboardSuccess = ClipboardUtils.copyToClipboard(
+                accessibilityService, 
+                keyword
+            )
+            
+            if (!clipboardSuccess) {
+                Log.e(TAG, "❌ 复制失败，使用手动输入")
+                return
+            }
+            
+            delay(500)
+            
+            // 2. 查找搜索框
+            val rootNode = accessibilityService.rootInActiveWindow
+                ?: accessibilityService.findDamaiRootNode()
+                ?: run {
+                    Log.e(TAG, "❌ 未找到根节点")
+                    return
+                }
+            
+            // 3. 查找搜索框节点
+            val searchBoxNode = findSearchBoxNode(rootNode)
+            
+            if (searchBoxNode == null) {
+                Log.w(TAG, "⚠️ 未找到搜索框，尝试点击搜索图标")
+                // 尝试点击搜索图标
+                val bitmap = screenCapture.getLatestFrame() ?: return
+                val textBlocks = analyzer.recognizeText(bitmap)
+                val searchIconBounds = analyzer.findTextBounds(textBlocks, "搜索")
+                
+                if (searchIconBounds != null) {
+                    val center = analyzer.calculateClickCenter(searchIconBounds)
+                    performClick(center.first, center.second)
+                    Log.i(TAG, "✅ 点击搜索图标")
+                    delay(1000)
+                }
+                return
+            }
+            
+            // 4. 点击搜索框获得焦点
+            searchBoxNode.performAction(AccessibilityNodeInfo.ACTION_CLICK)
+            Log.i(TAG, "✅ 点击搜索框")
+            delay(300)
+            
+            // 5. 触发粘贴操作
+            searchBoxNode.performAction(AccessibilityNodeInfo.ACTION_PASTE)
+            Log.i(TAG, "✅ 触发粘贴")
+            delay(500)
+            
+            // 6. 点击搜索按钮
+            val searchButtonNode = findSearchButtonNode(rootNode)
+            if (searchButtonNode != null) {
+                searchButtonNode.performAction(AccessibilityNodeInfo.ACTION_CLICK)
+                Log.i(TAG, "✅ 点击搜索按钮")
+            } else {
+                // 如果没有搜索按钮，尝试按回车
+                searchBoxNode.performAction(AccessibilityNodeInfo.ACTION_IME_ENTER)
+                Log.i(TAG, "✅ 触发回车搜索")
+            }
+            
+            // 7. 清空剪贴板（避免影响用户）
+            delay(1000)
+            ClipboardUtils.clearClipboard(accessibilityService)
+            
+            Log.i(TAG, "✅ 搜索完成：$keyword")
+            
+        } catch (e: Exception) {
+            Log.e(TAG, "❌ 搜索失败", e)
+        }
+    }
+    
+    /**
+     * 🆕 查找搜索框节点
+     */
+    private fun findSearchBoxNode(rootNode: AccessibilityNodeInfo): AccessibilityNodeInfo? {
+        // 递归查找包含"搜索"或"输入"的 EditText 节点
+        for (i in 0 until rootNode.childCount) {
+            val child = rootNode.getChild(i) ?: continue
+            
+            try {
+                // 检查是否是 EditText
+                if (child.className?.contains("EditText") == true) {
+                    val hintText = child.hintText?.toString() ?: ""
+                    val text = child.text?.toString() ?: ""
+                    
+                    if (hintText.contains("搜索") || text.contains("搜索")) {
+                        Log.d(TAG, "找到搜索框：$hintText")
+                        return child
+                    }
+                }
+                
+                // 递归查找子节点
+                val found = findSearchBoxNode(child)
+                if (found != null) {
+                    return found
+                }
+            } finally {
+                child.recycle()
+            }
+        }
+        
+        return null
+    }
+    
+    /**
+     * 🆕 查找搜索按钮节点
+     */
+    private fun findSearchButtonNode(rootNode: AccessibilityNodeInfo): AccessibilityNodeInfo? {
+        for (i in 0 until rootNode.childCount) {
+            val child = rootNode.getChild(i) ?: continue
+            
+            try {
+                val text = child.text?.toString() ?: ""
+                
+                if (text.contains("搜索") && child.isClickable) {
+                    Log.d(TAG, "找到搜索按钮：$text")
+                    return child
+                }
+                
+                // 递归查找子节点
+                val found = findSearchButtonNode(child)
+                if (found != null) {
+                    return found
+                }
+            } finally {
+                child.recycle()
+            }
+        }
+        
+        return null
+    }
+
+    /**
      * 选择票档（支持多票档备选）
      */
     private suspend fun selectTicketPriceWithFallback(targetPrice: String, priceTiers: String) {
@@ -743,6 +896,59 @@ class TicketGrabbingControllerEnhanced(
 
     fun getCurrentState(): GrabbingState {
         return currentState
+    }
+    
+    // ============================================================================
+    // 🆕 重试机制：指数退避策略
+    // ============================================================================
+    
+    /**
+     * 🆕 带指数退避的重试
+     * 
+     * @param maxRetries 最大重试次数
+     * @param initialDelay 初始延迟（毫秒）
+     * @param maxDelay 最大延迟（毫秒）
+     * @param factor 延迟因子
+     * @param block 要执行的挂起函数
+     */
+    private suspend fun <T> retryWithBackoff(
+        maxRetries: Int = 5,
+        initialDelay: Long = 100,
+        maxDelay: Long = 2000,
+        factor: Double = 2.0,
+        block: suspend () -> T
+    ): T {
+        var currentDelay = initialDelay
+        var attempt = 0
+        var lastException: Exception? = null
+        
+        while (attempt < maxRetries) {
+            try {
+                return block()
+            } catch (e: Exception) {
+                attempt++
+                lastException = e
+                
+                when (e) {
+                    is java.net.SocketTimeoutException -> {
+                        Log.w(TAG, "⏰ 网络超时，第 ${attempt}/${maxRetries} 次重试...")
+                    }
+                    is java.net.ConnectException -> {
+                        Log.w(TAG, "❌ 连接失败，第 ${attempt}/${maxRetries} 次重试...")
+                    }
+                    else -> {
+                        Log.w(TAG, "⚠️ 异常，第 ${attempt}/${maxRetries} 次重试：${e.message}")
+                    }
+                }
+                
+                if (attempt < maxRetries) {
+                    delay(currentDelay)
+                    currentDelay = (currentDelay * factor).toLong().coerceAtMost(maxDelay)
+                }
+            }
+        }
+        
+        throw lastException ?: Exception("未知错误")
     }
 }
 
