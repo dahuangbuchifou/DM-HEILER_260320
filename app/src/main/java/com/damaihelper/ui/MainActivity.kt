@@ -155,8 +155,8 @@ class MainActivity : AppCompatActivity() {
      * ⚠️ 注意：每次修改代码后必须同步更新时间！（CHECKLIST.md 规范）
      */
     private fun updateVersionTime() {
-        // 格式：2026-03-30 13:15
-        versionUpdateTimeText.text = "📅 版本更新时间：2026-03-30 13:15"
+        // 格式：2026-03-30 15:30
+        versionUpdateTimeText.text = "📅 版本更新时间：2026-03-30 15:30"
     }
 
     private fun setupListeners() {

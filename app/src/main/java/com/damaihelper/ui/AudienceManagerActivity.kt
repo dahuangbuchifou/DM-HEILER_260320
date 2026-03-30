@@ -1,8 +1,10 @@
 // ============================================================================
 // 📅 创建日期：2026-03-30 13:05
-// 🔧 功能：观众管理界面 - 增删改查
+// 📅 最新修复：2026-03-30 15:30
+// 🔧 修复内容：
+//   - 🐛 修复 Kotlin 空安全问题（isEdit && audience != null）
 //  说明：支持添加、编辑、删除观众，设置默认观众
-//  版本：v2.1.0
+//  版本：v2.1.1
 // ============================================================================
 
 package com.damaihelper.ui
@@ -133,7 +135,7 @@ class AudienceManagerActivity : AppCompatActivity() {
         val etRemark = view.findViewById<EditText>(R.id.etRemark)
         
         // 如果是编辑，填充现有数据
-        if (isEdit) {
+        if (isEdit && audience != null) {
             etName.setText(audience.name)
             etIdType.setText(audience.idType)
             etIdNumber.setText(audience.idNumber)
