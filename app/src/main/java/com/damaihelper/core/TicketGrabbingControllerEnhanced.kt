@@ -1,15 +1,16 @@
 // ============================================================================
-// 📅 最新修复：2026-03-30 10:45
+// 📅 最新修复：2026-03-30 11:45
 // 🔧 修复内容：
 //   - 🆕 完整信息抓取：演出标题、时间（多场次）、价格、场次、地点
 //   - 🆕 自动交互流程：预约抢票、确定、立即提交等按钮
 //   - 🆕 付款界面检测：到达付款界面自动停止
-//   - 🆕 多轮交互支持：检测信息不完整自动点击下一步/上一步
+//   - 🆕 多轮交互支持：检测信息不完整自动点击下一步/上一步（最多 5 轮）
 //   - 🆕 自动填写功能：支持时间、地址、票价自动填写
 //   - 🆕 详细日志记录：每个步骤的识别结果
 //   - 🐛 修复时间同步问题（CHECKLIST.md 规范要求）
+//   - 🆕 增强自动导航：多轮循环点击，支持上一步按钮
 //  说明：增强版图像识别抢票控制器 - 完整信息抓取 + 自动交互 + 自动填写
-//  版本：v1.3.1
+//  版本：v1.3.2
 // ============================================================================
 
 package com.damaihelper.core
@@ -62,18 +63,30 @@ class TicketGrabbingControllerEnhanced(
             "选择支付方式"
         )
         
-        // 🆕 自动交互按钮关键词
+        // 🆕 自动交互按钮关键词（按优先级排序）
         private val ACTION_BUTTONS = listOf(
+            // 预售阶段
             "预约抢票",
+            "预约",
+            // 确认阶段
             "确定",
-            "立即提交",
+            "确认",
+            // 导航阶段
             "下一步",
+            "上一步",  // 🆕 支持上一步
+            "继续",
+            // 选座阶段
             "确认选座",
+            "选座",
+            // 配送阶段
             "配送方式",
+            "配送地址",
+            // 提交阶段
             "提交订单",
             "立即购买",
             "去支付",
-            "确认下单"
+            "确认下单",
+            "确认并支付"
         )
         
         // 🆕 演出信息关键词
@@ -238,36 +251,61 @@ class TicketGrabbingControllerEnhanced(
     }
 
     /**
-     * 🆕 自动导航获取完整信息
+     * 🆕 自动导航获取完整信息（增强版 - 多轮循环点击）
      */
     private suspend fun autoNavigateToCompleteInfo() {
-        Log.i(TAG, "🔄 开始自动导航获取完整信息...")
+        Log.i(TAG, "🔄 开始自动导航获取完整信息（多轮循环）...")
         
-        for (buttonKeyword in ACTION_BUTTONS) {
-            Log.d(TAG, "尝试点击：$buttonKeyword")
+        var maxRounds = 5  // 最多 5 轮
+        var round = 0
+        
+        while (round < maxRounds) {
+            round++
+            Log.i(TAG, "🔄 第 ${round} 轮自动导航...")
             
-            val bitmap = screenCapture.getLatestFrame() ?: break
-            val textBlocks = analyzer.recognizeText(bitmap)
+            var clickedSomething = false
             
-            val buttonBounds = analyzer.findTextBounds(textBlocks, buttonKeyword)
-            if (buttonBounds != null) {
-                val center = analyzer.calculateClickCenter(buttonBounds)
-                performClick(center.first, center.second)
-                Log.i(TAG, "✅ 点击按钮：$buttonKeyword")
+            // 每轮尝试所有按钮
+            for (buttonKeyword in ACTION_BUTTONS) {
+                val bitmap = screenCapture.getLatestFrame() ?: break
+                val textBlocks = analyzer.recognizeText(bitmap)
                 
-                delay(2000)  // 等待页面加载
-                
-                // 重新检查信息
-                extractCompleteConcertInfo()
-                
-                if (isInfoComplete) {
-                    Log.i(TAG, "✅ 通过自动导航获取到完整信息")
-                    return
+                val buttonBounds = analyzer.findTextBounds(textBlocks, buttonKeyword)
+                if (buttonBounds != null) {
+                    val center = analyzer.calculateClickCenter(buttonBounds)
+                    performClick(center.first, center.second)
+                    Log.i(TAG, "✅ 点击按钮：$buttonKeyword")
+                    
+                    clickedSomething = true
+                    delay(2000)  // 等待页面加载
+                    
+                    // 重新检查信息
+                    extractCompleteConcertInfo()
+                    
+                    if (isInfoComplete) {
+                        Log.i(TAG, "✅ 第 ${round} 轮获取到完整信息！")
+                        return
+                    }
+                    
+                    // 检查是否到达付款界面
+                    if (isPaymentPage(textBlocks)) {
+                        Log.i(TAG, "✅ 到达付款界面，停止导航")
+                        return
+                    }
                 }
             }
+            
+            // 如果这轮什么都没点击，说明没有更多按钮可点了
+            if (!clickedSomething) {
+                Log.w(TAG, "⚠️ 第 ${round} 轮未找到可点击按钮，停止导航")
+                break
+            }
+            
+            Log.d(TAG, "第 ${round} 轮未完成，继续第 ${round + 1} 轮...")
+            delay(1000)
         }
         
-        Log.w(TAG, "⚠️ 自动导航未能获取完整信息")
+        Log.w(TAG, "⚠️ 自动导航完成（${round}轮），信息可能不完整")
     }
 
     /**
