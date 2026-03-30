@@ -1,6 +1,12 @@
 // ============================================================================
-// 📅 最新修复：2026-03-30 15:40
+// 📅 最新修复：2026-03-30 17:55
 // 🔧 修复内容：
+//   - 🐛 删除 findDamaiRootNode() 未解析引用
+//   - 🐛 删除 ACTION_IME_ENTER 未解析引用
+//   - 🐛 修复 TaskDatabase.kt MIGRATION_1_2 重复定义
+//  说明：增强版图像识别抢票控制器 - 完整信息抓取 + 自动交互 + 自动填写
+//  版本：v2.1.3
+// ============================================================================
 //   - 🆕 完整信息抓取：演出标题、时间（多场次）、价格、场次、地点
 //   - 🆕 自动交互流程：预约抢票、确定、立即提交等按钮
 //   - 🆕 付款界面检测：到达付款界面自动停止
@@ -511,9 +517,8 @@ class TicketGrabbingControllerEnhanced(
             
             delay(500)
             
-            // 2. 查找搜索框
+            // 2. 获取根节点
             val rootNode = accessibilityService.rootInActiveWindow
-                ?: accessibilityService.findDamaiRootNode()
                 ?: run {
                     Log.e(TAG, "❌ 未找到根节点")
                     return
@@ -548,16 +553,13 @@ class TicketGrabbingControllerEnhanced(
             Log.i(TAG, "✅ 触发粘贴")
             delay(500)
             
-            // 6. 点击搜索按钮
+            // 6. 点击搜索按钮或触发回车
             val searchButtonNode = findSearchButtonNode(rootNode)
             if (searchButtonNode != null) {
                 searchButtonNode.performAction(AccessibilityNodeInfo.ACTION_CLICK)
                 Log.i(TAG, "✅ 点击搜索按钮")
-            } else {
-                // 如果没有搜索按钮，尝试按回车
-                searchBoxNode.performAction(AccessibilityNodeInfo.ACTION_IME_ENTER)
-                Log.i(TAG, "✅ 触发回车搜索")
             }
+            // 注意：ACTION_IME_ENTER 可能需要 API 30+，暂时不处理
             
             // 7. 清空剪贴板（避免影响用户）
             delay(1000)

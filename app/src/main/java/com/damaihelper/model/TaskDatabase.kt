@@ -8,10 +8,11 @@ import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 
 // ============================================================================
-// 📅 数据库版本升级：2026-03-29 15:47
+// 📅 数据库版本升级：2026-03-30 17:55
 // 🔧 变更内容：
-//   - version: 1 → 2
-//   - 🆕 添加数据库迁移策略（支持新增字段）
+//   - version: 2 → 3
+//   - 🆕 添加观众表（audiences）
+//   - 🐛 修复 MIGRATION_1_2 重复定义问题
 //   - 新增字段：audienceName, selectedPrice, sessionId, priceTiers, 
 //               audienceIndex, grabMode, quantity
 // ============================================================================
@@ -85,69 +86,6 @@ abstract class TaskDatabase : RoomDatabase() {
                     )
                     """
                 )
-            }
-        }
-
-        // 🆕 数据库迁移：version 1 → 2
-        private val MIGRATION_1_2 = object : Migration(1, 2) {
-            override fun migrate(database: SupportSQLiteDatabase) {
-                // 添加新字段（使用 try-catch 避免重复添加）
-                try {
-                    // audienceName: 用于自动选择观演人
-                    database.execSQL(
-                        "ALTER TABLE ticket_tasks ADD COLUMN audienceName TEXT NOT NULL DEFAULT ''"
-                    )
-                } catch (e: Exception) {
-                    // 字段已存在，忽略
-                }
-                try {
-                    // selectedPrice: 用于步骤 2 选择票档
-                    database.execSQL(
-                        "ALTER TABLE ticket_tasks ADD COLUMN selectedPrice TEXT NOT NULL DEFAULT ''"
-                    )
-                } catch (e: Exception) {
-                    // 字段已存在，忽略
-                }
-                try {
-                    // sessionId: 指定场次 ID
-                    database.execSQL(
-                        "ALTER TABLE ticket_tasks ADD COLUMN sessionId TEXT NOT NULL DEFAULT ''"
-                    )
-                } catch (e: Exception) {
-                    // 字段已存在，忽略
-                }
-                try {
-                    // priceTiers: 多票档备选
-                    database.execSQL(
-                        "ALTER TABLE ticket_tasks ADD COLUMN priceTiers TEXT NOT NULL DEFAULT ''"
-                    )
-                } catch (e: Exception) {
-                    // 字段已存在，忽略
-                }
-                try {
-                    // audienceIndex: 观影人索引
-                    database.execSQL(
-                        "ALTER TABLE ticket_tasks ADD COLUMN audienceIndex INTEGER NOT NULL DEFAULT 1"
-                    )
-                } catch (e: Exception) {
-                    // 字段已存在，忽略
-                }
-                try {
-                    // grabMode: 抢票模式
-                    database.execSQL(
-                        "ALTER TABLE ticket_tasks ADD COLUMN grabMode TEXT NOT NULL DEFAULT 'normal'"
-                    )
-                } catch (e: Exception) {
-                    // 字段已存在，忽略
-                }
-                try {
-                    // quantity: 票数（兼容字段）
-                    database.execSQL(
-                        "ALTER TABLE ticket_tasks ADD COLUMN quantity INTEGER NOT NULL DEFAULT 1"
-                    )
-                } catch (e: Exception) {
-                    // 字段已存在，忽略
-                }
             }
         }
 
