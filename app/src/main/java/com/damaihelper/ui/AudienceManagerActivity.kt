@@ -1,10 +1,11 @@
 // ============================================================================
 // 📅 创建日期：2026-03-30 13:05
-// 📅 最新修复：2026-03-30 15:30
+// 📅 最新修复：2026-03-30 15:40
 // 🔧 修复内容：
 //   - 🐛 修复 Kotlin 空安全问题（isEdit && audience != null）
+//   - 🐛 修复字符串模板语法（setMessage 字符串连接）
 //  说明：支持添加、编辑、删除观众，设置默认观众
-//  版本：v2.1.1
+//  版本：v2.1.2
 // ============================================================================
 
 package com.damaihelper.ui
@@ -108,7 +109,7 @@ class AudienceManagerActivity : AppCompatActivity() {
     private fun deleteAudience(audience: Audience) {
         AlertDialog.Builder(this)
             .setTitle("确认删除")
-            .setMessage("确定要删除观众"${audience.name}"吗？")
+            .setMessage("确定要删除观众 ${audience.name} 吗？")
             .setPositiveButton("删除") { _, _ ->
                 lifecycleScope.launch {
                     try {
