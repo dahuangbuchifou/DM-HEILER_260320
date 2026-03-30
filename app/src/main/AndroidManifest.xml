@@ -72,6 +72,17 @@
                 android:value=".ui.MainActivity" />
         </activity>
 
+        <!-- 🆕 观众管理界面 -->
+        <activity
+            android:name=".ui.AudienceManagerActivity"
+            android:exported="false"
+            android:label="观众管理"
+            android:parentActivityName=".ui.MainActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".ui.MainActivity" />
+        </activity>
+
         <!-- 无障碍服务 -->
         <service
             android:name=".service.TicketGrabbingAccessibilityService"

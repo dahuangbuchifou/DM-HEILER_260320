@@ -155,8 +155,8 @@ class MainActivity : AppCompatActivity() {
      * ⚠️ 注意：每次修改代码后必须同步更新时间！（CHECKLIST.md 规范）
      */
     private fun updateVersionTime() {
-        // 格式：2026-03-30 13:00
-        versionUpdateTimeText.text = "📅 版本更新时间：2026-03-30 13:00"
+        // 格式：2026-03-30 13:15
+        versionUpdateTimeText.text = "📅 版本更新时间：2026-03-30 13:15"
     }
 
     private fun setupListeners() {
@@ -166,6 +166,12 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        // 🆕 观众管理按钮
+        val btnAudienceManager: Button = findViewById(R.id.btn_audience_manager)
+        btnAudienceManager.setOnClickListener {
+            startActivity(Intent(this, AudienceManagerActivity::class.java))
+        }
+        
         addTaskButton.setOnClickListener {
             startActivity(Intent(this, TaskConfigActivity::class.java))
         }

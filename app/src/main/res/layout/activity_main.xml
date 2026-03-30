@@ -93,6 +93,18 @@
         android:overScrollMode="always"
         android:fillViewport="true"/>
 
+    <!-- 观众管理按钮 -->
+    <Button
+        android:id="@+id/btn_audience_manager"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:text="👤 观众管理"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:textColor="@android:color/white"
+        android:background="@drawable/button_primary"
+        android:layout_marginBottom="8dp"/>
+
     <!-- 添加任务按钮 -->
     <Button
         android:id="@+id/add_task_button"

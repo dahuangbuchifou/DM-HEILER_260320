@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- ============================================================================
+     📅 创建日期：2026-03-30 13:05
+     🔧 功能：观众列表项布局
+     版本：v2.1.0
+     ============================================================================ -->
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="8dp"
+    app:cardCornerRadius="8dp"
+    app:cardElevation="4dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <!-- 第一行：姓名 + 默认标记 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:id="@+id/tvAudienceName"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="张三"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="@color/black" />
+
+            <TextView
+                android:id="@+id/tvDefaultBadge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="✅ 默认"
+                android:textSize="12sp"
+                android:textColor="@color/status_success"
+                android:visibility="gone" />
+        </LinearLayout>
+
+        <!-- 第二行：证件类型 + 号码 -->
+        <TextView
+            android:id="@+id/tvIdInfo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="身份证：110101199001011234"
+            android:textSize="14sp"
+            android:textColor="@color/gray"
+            android:layout_marginTop="8dp" />
+
+        <!-- 第三行：手机号 -->
+        <TextView
+            android:id="@+id/tvPhone"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="手机：13800138000"
+            android:textSize="14sp"
+            android:textColor="@color/gray"
+            android:layout_marginTop="4dp" />
+
+        <!-- 按钮区域 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="12dp"
+            android:gravity="end">
+
+            <Button
+                android:id="@+id/btnSetDefault"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="设为默认"
+                android:textSize="12sp"
+                android:layout_marginEnd="8dp" />
+
+            <Button
+                android:id="@+id/btnEdit"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="编辑"
+                android:textSize="12sp"
+                android:layout_marginEnd="8dp" />
+
+            <Button
+                android:id="@+id/btnDelete"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="删除"
+                android:textSize="12sp"
+                android:backgroundTint="@color/status_failed" />
+        </LinearLayout>
+
+    </LinearLayout>
+
+</androidx.cardview.widget.CardView>
