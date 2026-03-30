@@ -115,6 +115,69 @@ class MainActivity : AppCompatActivity() {
         taskRecyclerView.adapter = taskAdapter
     }
 
+/**
+     * 🆕 编辑和删除任务函数
+     */
+
+
+    /**
+     * 🆕 显示编辑任务对话框
+     */
+    private fun showEditTaskDialog(task: TicketTask) {
+        val view = LayoutInflater.from(this).inflate(R.layout.dialog_add_task, null)
+        
+        val etTaskName = view.findViewById<EditText>(R.id.etTaskName)
+        val etKeyword = view.findViewById<EditText>(R.id.etKeyword)
+        val etDate = view.findViewById<EditText>(R.id.etDate)
+        val etTime = view.findViewById<EditText>(R.id.etTime)
+        val etPrice = view.findViewById<EditText>(R.id.etPrice)
+        val etAudience = view.findViewById<EditText>(R.id.etAudience)
+        
+        // 填充现有数据
+        etTaskName.setText(task.name)
+        etKeyword.setText(task.concertKeyword)
+        etDate.setText(task.grabDate)
+        etTime.setText(if (task.grabTime > 0) {
+            val sdf = java.text.SimpleDateFormat("HH:mm", java.util.Locale.getDefault())
+            sdf.format(java.util.Date(task.grabTime))
+        } else "")
+        etPrice.setText(task.selectedPrice.ifEmpty { task.ticketPriceKeyword })
+        etAudience.setText(task.audienceName)
+        
+        AlertDialog.Builder(this)
+            .setTitle("编辑任务")
+            .setView(view)
+            .setPositiveButton("保存") { _, _ ->
+                // 保存逻辑（后续实现）
+                Toast.makeText(this, "保存功能待实现", Toast.LENGTH_SHORT).show()
+            }
+            .setNegativeButton("取消", null)
+            .show()
+    }
+
+    /**
+     * 🆕 删除任务
+     */
+    private fun deleteTask(task: TicketTask) {
+        AlertDialog.Builder(this)
+            .setTitle("确认删除")
+            .setMessage("确定要删除任务 ${task.name} 吗？")
+            .setPositiveButton("删除") { _, _ ->
+                lifecycleScope.launch {
+                    try {
+                        val db = TaskDatabase.getDatabase(this@MainActivity)
+                        db.taskDao().delete(task)
+                        Toast.makeText(this@MainActivity, "删除成功", Toast.LENGTH_SHORT).show()
+                        loadTasks()
+                    } catch (e: Exception) {
+                        Toast.makeText(this@MainActivity, "删除失败：${e.message}", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+            .setNegativeButton("取消", null)
+            .show()
+    }
+
     private fun handleStartStopTask(task: TicketTask) {
         if (!AccessibilityUtils.isServiceEnabled(this)) {
             Toast.makeText(this, "请先开启无障碍服务", Toast.LENGTH_LONG).show()
@@ -155,8 +218,8 @@ class MainActivity : AppCompatActivity() {
      * ⚠️ 注意：每次修改代码后必须同步更新时间！（CHECKLIST.md 规范）
      */
     private fun updateVersionTime() {
-        // 格式：2026-03-30 17:55
-        versionUpdateTimeText.text = "📅 版本更新时间：2026-03-30 17:55"
+        // 格式：2026-03-30 21:05
+        versionUpdateTimeText.text = "📅 版本更新时间：2026-03-30 21:05"
     }
 
     private fun setupListeners() {
