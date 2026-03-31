@@ -9,7 +9,7 @@ interface TaskDao {
     fun getAllTasks(): Flow<List<TicketTask>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertTask(task: TicketTask)
+    suspend fun insertTask(task: TicketTask): Long
 
     @Update
     suspend fun updateTask(task: TicketTask)

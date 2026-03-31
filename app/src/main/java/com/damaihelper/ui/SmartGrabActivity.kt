@@ -1,13 +1,14 @@
 // ============================================================================
 // 📅 创建日期：2026-03-30 22:30
-// 📅 最新修复：2026-03-31 11:15
+// 📅 最新修复：2026-03-31 11:20
 // 🔧 修复内容：
 //   1. 修复删除按钮无效问题（连接 onDelete 到实际删除函数）
 //   2. 增强智能抢票功能（创建任务后自动跳转大麦并启动搜索）
 //   3. 实现完整抢票流程（搜索→选座→观众→提交）
 //   4. 🐛 修复编译错误（添加 TicketGrabbingAccessibilityService import）
+//   5. 🐛 修复 insertTask 返回类型（Unit → Long）
 //  说明：只需填写 3 项（歌手、日期、价位），其余自动完成
-//  版本：v2.2.3
+//  版本：v2.2.4
 // ============================================================================
 
 package com.damaihelper.ui
@@ -246,7 +247,7 @@ class SmartGrabActivity : AppCompatActivity() {
                     remark = "智能抢票模式创建"
                 )
 
-                val taskId = db.taskDao().insertTask(task).toInt()
+                val taskId = db.taskDao().insertTask(task)
 
                 Toast.makeText(this@SmartGrabActivity, "✅ 任务创建成功！即将自动跳转到大麦...", Toast.LENGTH_LONG).show()
 
