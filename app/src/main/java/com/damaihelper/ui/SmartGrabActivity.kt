@@ -11,6 +11,7 @@
 
 package com.damaihelper.ui
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.widget.*
@@ -251,16 +252,15 @@ class SmartGrabActivity : AppCompatActivity() {
                 android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
                     try {
                         // 启动抢票服务
-                        val service = com.damaihelper.service.TicketGrabbingAccessibilityService.getInstance()
+                        val service = TicketGrabbingAccessibilityService.getInstance()
                         if (service != null) {
                             // 自动开始抢票流程
                             service.startGrabbing(task)
                             
                             // 打开大麦 App
-                            val damaiIntent = android.content.Intent(android.content.Intent.ACTION_VIEW).apply {
-                                setPackageName("cn.damai")
+                            val damaiIntent = Intent().apply {
                                 setClassName("cn.damai", "cn.damai.main.activity.MainActivity")
-                                addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+                                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                             }
                             
                             // 尝试启动大麦
