@@ -1,6 +1,6 @@
 // ============================================================================
 // 📅 修复日期：2026-03-20
-// 📅 最新修复：2026-03-31 11:55
+// 📅 最新修复：2026-03-31 12:35
 // 🔧 修复内容：
 //   - 添加页面检测容错处理
 //   - 优化演出信息抓取逻辑
@@ -15,7 +15,9 @@
 //   -  优化搜索流程（优先点击搜索结果，其次点击搜索按钮）
 //   - 🆕 新增 checkAndEnterConcertDetail 函数（自动进入详情页）
 //   -  增强尚未开售处理（自动设置提醒）
-//  版本：v2.2.6
+//   - ✨ 重构预约购票流程（点击预约→选场次→选票档→确认）
+//   - 🆕 新增 handlePopups 函数（自动处理弹窗干扰）
+//  版本：v2.2.7
 // 📝 说明：核心无障碍服务 - 自动抢票、答题、验证码处理
 // ============================================================================
 
@@ -337,49 +339,65 @@ class TicketGrabbingAccessibilityService : AccessibilityService() {
     private suspend fun checkAndEnterConcertDetail(keyword: String) {
         Log.i(TAG, "🔍 检查是否到达演出详情页...")
         
-        // 检查是否有"立即购买"或"选座购票"按钮
-        val buyBtn = findNodeByAnyText(
-            "立即购买", "立即预订", "选座购票",
-            "cn.damai:id/buyBtn"
-        )
+        // 1. 先检查是否已经在详情页（有"预约抢票"或"立即购买"按钮）
+        val reserveBtn = findNodeByAnyText("预约抢票", "预约想看")
+        val buyBtn = findNodeByAnyText("立即购买", "立即预订", "选座购票")
         
-        if (buyBtn != null) {
-            Log.i(TAG, "✅ 已到达演出详情页，找到购买按钮")
-            // 检查是否可点击
-            if (buyBtn.isEnabled) {
+        if (reserveBtn != null || buyBtn != null) {
+            Log.i(TAG, "✅ 已在演出详情页")
+            
+            // 如果是预约抢票，直接点击
+            if (reserveBtn != null) {
+                reserveBtn.performAction(AccessibilityNodeInfo.ACTION_CLICK)
+                Log.i(TAG, "✅ 点击预约抢票按钮")
+                delay(2000)
+            } else if (buyBtn != null && buyBtn.isEnabled) {
                 buyBtn.performAction(AccessibilityNodeInfo.ACTION_CLICK)
                 Log.i(TAG, "✅ 点击购买按钮")
                 delay(2000)
-            } else {
-                Log.w(TAG, "⚠️ 购买按钮不可用，可能尚未开售")
             }
+            return
+        }
+        
+        // 2. 检查是否尚未开售
+        val notForSaleNode = findNodeByAnyText(
+            "尚未开售", "即将开售", "开售提醒",
+            "提醒我", "缺货登记"
+        )
+        if (notForSaleNode != null) {
+            Log.w(TAG, "⚠️ 演出尚未开售")
+            notForSaleNode.performAction(AccessibilityNodeInfo.ACTION_CLICK)
+            delay(1000)
+            
+            val confirmBtn = findNodeByAnyText("确定", "确认", "好的")
+            if (confirmBtn != null) {
+                confirmBtn.performAction(AccessibilityNodeInfo.ACTION_CLICK)
+                Log.i(TAG, "✅ 已设置开售提醒")
+            }
+            return
+        }
+        
+        // 3. 可能在演出列表页，需要点击演出卡片
+        Log.w(TAG, "⚠️ 未找到购买按钮，可能在演出列表页，尝试点击演出卡片...")
+        
+        // 查找演出卡片（包含关键词的卡片）
+        val concertCard = findNodeByAnyText(
+            keyword,
+            "${keyword}演唱会",
+            "${keyword}巡演",
+            "cn.damai:id/item_title"
+        )
+        
+        if (concertCard != null) {
+            concertCard.performAction(AccessibilityNodeInfo.ACTION_CLICK)
+            Log.i(TAG, "✅ 点击演出卡片：$keyword")
+            delay(3000)
+            
+            // 等待页面加载后，再次检查
+            checkAndEnterConcertDetail(keyword)
         } else {
-            // 检查是否尚未开售
-            val notForSaleNode = findNodeByAnyText(
-                "尚未开售", "即将开售", "开售提醒",
-                "提醒我", "缺货登记"
-            )
-            if (notForSaleNode != null) {
-                Log.w(TAG, "⚠️ 演出尚未开售")
-                notForSaleNode.performAction(AccessibilityNodeInfo.ACTION_CLICK)
-                delay(1000)
-                
-                // 点击确认
-                val confirmBtn = findNodeByAnyText("确定", "确认", "好的")
-                if (confirmBtn != null) {
-                    confirmBtn.performAction(AccessibilityNodeInfo.ACTION_CLICK)
-                    Log.i(TAG, "✅ 已设置开售提醒")
-                }
-            } else {
-                Log.w(TAG, "⚠️ 未找到购买按钮，可能在演出列表页，尝试点击第一个结果...")
-                // 尝试点击第一个演出
-                val firstResult = findNodeByText(keyword)
-                if (firstResult != null) {
-                    firstResult.performAction(AccessibilityNodeInfo.ACTION_CLICK)
-                    Log.i(TAG, "✅ 点击第一个演出结果")
-                    delay(3000)
-                }
-            }
+            Log.e(TAG, "❌ 未找到演出卡片，尝试滚动查找...")
+            scrollAndFind(keyword)
         }
     }
     
@@ -524,30 +542,162 @@ class TicketGrabbingAccessibilityService : AccessibilityService() {
     }
 
     /**
-     * 选择票档
+     * 选择票档（预约模式）
      */
     private suspend fun selectTicketPrice(price: String) {
         try {
-            Log.i(TAG, "🎫 开始选择票档：$price")
+            Log.i(TAG, "🎫 开始预约购票流程...")
             
-            // 0. 检查是否尚未开售
-            val notForSaleNode = findNodeByAnyText(
-                "尚未开售", "即将开售", "开售提醒",
-                "提醒我", "缺货登记"
+            // 1. 点击"预约抢票"按钮（详情页底部）
+            Log.i(TAG, "步骤 1: 查找预约抢票按钮...")
+            val reserveBtn = findNodeByAnyText(
+                "预约抢票", "预约想看", "提前选票档",
+                "cn.damai:id/reserveBtn"
             )
-            if (notForSaleNode != null) {
-                Log.w(TAG, "⚠️ 演出尚未开售，尝试点击开售提醒...")
-                notForSaleNode.performAction(AccessibilityNodeInfo.ACTION_CLICK)
+            
+            if (reserveBtn != null) {
+                reserveBtn.performAction(AccessibilityNodeInfo.ACTION_CLICK)
+                Log.i(TAG, "✅ 点击预约抢票按钮")
                 delay(2000)
-                
-                // 点击确认按钮
-                val confirmBtn = findNodeByAnyText("确定", "确认", "好的")
-                if (confirmBtn != null) {
-                    confirmBtn.performAction(AccessibilityNodeInfo.ACTION_CLICK)
-                    Log.i(TAG, "✅ 已设置开售提醒")
-                }
-                return
+            } else {
+                Log.w(TAG, "⚠️ 未找到预约抢票按钮，尝试继续...")
             }
+            
+            // 2. 选择场次
+            Log.i(TAG, "步骤 2: 选择场次...")
+            selectConcertDate()
+            delay(1000)
+            
+            // 3. 选择票档
+            Log.i(TAG, "步骤 3: 选择票档：$price...")
+            selectPriceTier(price)
+            delay(1000)
+            
+            // 4. 点击确认预约
+            Log.i(TAG, "步骤 4: 确认预约...")
+            confirmReservation()
+            
+        } catch (e: Exception) {
+            Log.e(TAG, "预约购票失败", e)
+        }
+    }
+    
+    /**
+     * 选择演出场次
+     */
+    private suspend fun selectConcertDate() {
+        // 查找场次列表
+        val dateNodes = findNodesByText("周六", "周日", "预售", "预")
+        
+        if (dateNodes.isNotEmpty()) {
+            // 选择第一个可用场次
+            dateNodes[0].performAction(AccessibilityNodeInfo.ACTION_CLICK)
+            Log.i(TAG, "✅ 选择场次：${dateNodes[0].text}")
+            delay(500)
+        } else {
+            Log.w(TAG, "⚠️ 未找到场次选项")
+        }
+    }
+    
+    /**
+     * 选择票档
+     */
+    private suspend fun selectPriceTier(price: String) {
+        // 查找票档（支持多种格式）
+        val priceNode = findNodeByAnyText(
+            "¥$price", "$price 元", "内场$price", "看台$price",
+            price
+        )
+        
+        if (priceNode != null) {
+            priceNode.performAction(AccessibilityNodeInfo.ACTION_CLICK)
+            Log.i(TAG, "✅ 选择票档：$price")
+            delay(500)
+        } else {
+            Log.w(TAG, "⚠️ 未找到票档：$price，尝试滚动查找...")
+            scrollAndFind(price)
+        }
+    }
+    
+    /**
+     * 确认预约
+     */
+    private suspend fun confirmReservation() {
+        // 查找确认按钮
+        val confirmBtn = findNodeByAnyText(
+            "已预约", "确认预约", "确定", "完成",
+            "cn.damai:id/confirmBtn"
+        )
+        
+        if (confirmBtn != null) {
+            confirmBtn.performAction(AccessibilityNodeInfo.ACTION_CLICK)
+            Log.i(TAG, "✅ 确认预约")
+            delay(2000)
+            
+            // 处理可能的弹窗（知道了、下一步等）
+            handlePopups()
+        } else {
+            Log.w(TAG, "⚠️ 未找到确认按钮")
+        }
+    }
+    
+    /**
+     * 处理弹窗干扰（知道了、下一步、实名提示等）
+     */
+    private suspend fun handlePopups() {
+        Log.i(TAG, "🔍 处理可能的弹窗...")
+        
+        val popupKeywords = arrayOf(
+            "知道了", "好的", "确定", "确认", "下一步", "继续",
+            "实名", "提示", "须知", "同意", "授权"
+        )
+        
+        for (keyword in popupKeywords) {
+            val node = findNodeByText(keyword)
+            if (node != null) {
+                node.performAction(AccessibilityNodeInfo.ACTION_CLICK)
+                Log.i(TAG, "✅ 点击弹窗按钮：$keyword")
+                delay(500)
+            }
+        }
+    }
+    
+    /**
+     * 查找多个文本的节点（返回所有匹配）
+     */
+    private fun findNodesByText(vararg texts: String): List<AccessibilityNodeInfo> {
+        val results = mutableListOf<AccessibilityNodeInfo>()
+        val rootNode = rootInActiveWindow ?: return results
+        
+        for (text in texts) {
+            findNodesByTextRecursive(rootNode, text, results)
+        }
+        
+        return results
+    }
+    
+    private fun findNodesByTextRecursive(
+        node: AccessibilityNodeInfo,
+        text: String,
+        results: MutableList<AccessibilityNodeInfo>
+    ) {
+        if (node.text?.toString()?.contains(text, ignoreCase = true) == true) {
+            results.add(node)
+        }
+        
+        for (i in 0 until node.childCount) {
+            val child = node.getChild(i) ?: continue
+            findNodesByTextRecursive(child, text, results)
+        }
+    }
+    
+    /**
+     * 选择票档（旧版本，保留兼容）
+     */
+    @Deprecated("使用新的预约购票流程")
+    private suspend fun selectTicketPriceOld(price: String) {
+        try {
+            Log.i(TAG, "🎫 开始选择票档：$price")
             
             // 1. 等待票档列表加载
             delay(1000)
