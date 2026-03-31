@@ -1,6 +1,6 @@
 // ============================================================================
 // 📅 修复日期：2026-03-20
-// 📅 最新修复：2026-03-31 10:15
+// 📅 最新修复：2026-03-31 11:15
 // 🔧 修复内容：
 //   - 添加页面检测容错处理
 //   - 优化演出信息抓取逻辑
@@ -10,7 +10,8 @@
 //   - 🆕 实现选择票档功能（自动选择 + 售罄检测）
 //   - 🆕 实现选择观众功能
 //   - 🆕 实现提交订单功能
-//  版本：v2.2.2
+//   - 🐛 修复函数重载歧义（findNodeByAnyText → findNodeByIdOrText）
+//  版本：v2.2.3
 // 📝 说明：核心无障碍服务 - 自动抢票、答题、验证码处理
 // ============================================================================
 
@@ -249,9 +250,9 @@ class TicketGrabbingAccessibilityService : AccessibilityService() {
             delay(1000)
             
             // 2. 查找搜索框（多种可能）
-            val searchNode = findNodeByAnyText(
-                "搜索", "搜索演出", "搜索关键字",
-                DamaiConstants.SEARCH_BOX_ID
+            val searchNode = findNodeByIdOrText(
+                DamaiConstants.SEARCH_BOX_ID,
+                "搜索", "搜索演出", "搜索关键字"
             )
             
             if (searchNode != null) {
@@ -274,9 +275,9 @@ class TicketGrabbingAccessibilityService : AccessibilityService() {
                 }
                 
                 // 4. 点击搜索按钮
-                val searchBtnNode = findNodeByAnyText(
-                    DamaiConstants.SEARCH_BUTTON_TEXT,
-                    DamaiConstants.SEARCH_BUTTON_ID
+                val searchBtnNode = findNodeByIdOrText(
+                    DamaiConstants.SEARCH_BUTTON_ID,
+                    DamaiConstants.SEARCH_BUTTON_TEXT
                 )
                 if (searchBtnNode != null) {
                     searchBtnNode.performAction(AccessibilityNodeInfo.ACTION_CLICK)
@@ -379,9 +380,9 @@ class TicketGrabbingAccessibilityService : AccessibilityService() {
     }
     
     /**
-     * 通过文本或 ID 查找节点
+     * 通过 ID 或文本查找节点
      */
-    private fun findNodeByAnyText(id: String, vararg texts: String): AccessibilityNodeInfo? {
+    private fun findNodeByIdOrText(id: String, vararg texts: String): AccessibilityNodeInfo? {
         // 先尝试通过 ID 查找
         val nodeById = findNodeById(id)
         if (nodeById != null) {
@@ -448,7 +449,7 @@ class TicketGrabbingAccessibilityService : AccessibilityService() {
             delay(1000)
             
             // 2. 查找票档列表容器
-            val priceList = findNodeByAnyText(
+            val priceList = findNodeByIdOrText(
                 DamaiConstants.PRICE_LIST_ID,
                 DamaiConstants.RECYCLER_VIEW_CLASS
             )
@@ -474,9 +475,9 @@ class TicketGrabbingAccessibilityService : AccessibilityService() {
                         delay(1000)
                         
                         // 4. 点击确认选座
-                        val confirmBtn = findNodeByAnyText(
-                            DamaiConstants.CONFIRM_BUTTON_TEXT,
-                            DamaiConstants.CONFIRM_BUTTON_ID
+                        val confirmBtn = findNodeByIdOrText(
+                            DamaiConstants.CONFIRM_BUTTON_ID,
+                            DamaiConstants.CONFIRM_BUTTON_TEXT
                         )
                         if (confirmBtn != null) {
                             confirmBtn.performAction(AccessibilityNodeInfo.ACTION_CLICK)
@@ -536,7 +537,7 @@ class TicketGrabbingAccessibilityService : AccessibilityService() {
             delay(1000)
             
             // 2. 查找观众列表
-            val audienceList = findNodeByAnyText(
+            val audienceList = findNodeByIdOrText(
                 DamaiConstants.AUDIENCE_LIST_ID,
                 DamaiConstants.AUDIENCE_LIST_CLASS
             )
@@ -584,9 +585,9 @@ class TicketGrabbingAccessibilityService : AccessibilityService() {
             delay(2000)
             
             // 2. 查找提交订单按钮
-            val submitBtn = findNodeByAnyText(
-                DamaiConstants.SUBMIT_ORDER_BUTTON_TEXT,
+            val submitBtn = findNodeByIdOrText(
                 DamaiConstants.SUBMIT_ORDER_BUTTON_ID,
+                DamaiConstants.SUBMIT_ORDER_BUTTON_TEXT,
                 DamaiConstants.SUBMIT_ORDER_BUTTON_ID_ALT
             )
             

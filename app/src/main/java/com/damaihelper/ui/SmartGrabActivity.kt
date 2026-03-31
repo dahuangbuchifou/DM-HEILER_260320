@@ -1,12 +1,13 @@
 // ============================================================================
 // 📅 创建日期：2026-03-30 22:30
-// 📅 最新修复：2026-03-31 10:15
+// 📅 最新修复：2026-03-31 11:15
 // 🔧 修复内容：
 //   1. 修复删除按钮无效问题（连接 onDelete 到实际删除函数）
 //   2. 增强智能抢票功能（创建任务后自动跳转大麦并启动搜索）
 //   3. 实现完整抢票流程（搜索→选座→观众→提交）
+//   4. 🐛 修复编译错误（添加 TicketGrabbingAccessibilityService import）
 //  说明：只需填写 3 项（歌手、日期、价位），其余自动完成
-//  版本：v2.2.2
+//  版本：v2.2.3
 // ============================================================================
 
 package com.damaihelper.ui
@@ -22,6 +23,7 @@ import com.damaihelper.R
 import com.damaihelper.model.Audience
 import com.damaihelper.model.TaskDatabase
 import com.damaihelper.model.TicketTask
+import com.damaihelper.service.TicketGrabbingAccessibilityService
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
