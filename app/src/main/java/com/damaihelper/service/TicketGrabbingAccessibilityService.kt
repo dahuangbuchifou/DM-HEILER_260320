@@ -1,6 +1,6 @@
 // ============================================================================
 // 📅 修复日期：2026-03-20
-// 📅 最新修复：2026-03-31 11:35
+// 📅 最新修复：2026-03-31 11:55
 // 🔧 修复内容：
 //   - 添加页面检测容错处理
 //   - 优化演出信息抓取逻辑
@@ -13,7 +13,9 @@
 //   - 🐛 修复函数重载歧义（findNodeByAnyText → findNodeByIdOrText）
 //   - 🐛 修复 insertTask 返回类型（Unit → Long）
 //   -  优化搜索流程（优先点击搜索结果，其次点击搜索按钮）
-//  版本：v2.2.5
+//   - 🆕 新增 checkAndEnterConcertDetail 函数（自动进入详情页）
+//   -  增强尚未开售处理（自动设置提醒）
+//  版本：v2.2.6
 // 📝 说明：核心无障碍服务 - 自动抢票、答题、验证码处理
 // ============================================================================
 
@@ -283,6 +285,9 @@ class TicketGrabbingAccessibilityService : AccessibilityService() {
                     resultNode.performAction(AccessibilityNodeInfo.ACTION_CLICK)
                     Log.i(TAG, "✅ 点击搜索结果：$keyword")
                     delay(3000) // 等待页面跳转
+                    
+                    // 检查是否到达演出详情页
+                    checkAndEnterConcertDetail(keyword)
                 } else {
                     Log.w(TAG, "⚠️ 未找到搜索结果，尝试点击搜索按钮...")
                     
@@ -303,6 +308,9 @@ class TicketGrabbingAccessibilityService : AccessibilityService() {
                             resultNode2.performAction(AccessibilityNodeInfo.ACTION_CLICK)
                             Log.i(TAG, "✅ 点击搜索结果：$keyword")
                             delay(3000)
+                            
+                            // 检查是否到达演出详情页
+                            checkAndEnterConcertDetail(keyword)
                         } else {
                             Log.w(TAG, "⚠️ 仍未找到搜索结果，尝试滚动查找...")
                             scrollAndFind(keyword)
@@ -320,6 +328,58 @@ class TicketGrabbingAccessibilityService : AccessibilityService() {
         } catch (e: Exception) {
             Log.e(TAG, "搜索演出失败", e)
             throw e
+        }
+    }
+    
+    /**
+     * 检查并进入演出详情页
+     */
+    private suspend fun checkAndEnterConcertDetail(keyword: String) {
+        Log.i(TAG, "🔍 检查是否到达演出详情页...")
+        
+        // 检查是否有"立即购买"或"选座购票"按钮
+        val buyBtn = findNodeByAnyText(
+            "立即购买", "立即预订", "选座购票",
+            "cn.damai:id/buyBtn"
+        )
+        
+        if (buyBtn != null) {
+            Log.i(TAG, "✅ 已到达演出详情页，找到购买按钮")
+            // 检查是否可点击
+            if (buyBtn.isEnabled) {
+                buyBtn.performAction(AccessibilityNodeInfo.ACTION_CLICK)
+                Log.i(TAG, "✅ 点击购买按钮")
+                delay(2000)
+            } else {
+                Log.w(TAG, "⚠️ 购买按钮不可用，可能尚未开售")
+            }
+        } else {
+            // 检查是否尚未开售
+            val notForSaleNode = findNodeByAnyText(
+                "尚未开售", "即将开售", "开售提醒",
+                "提醒我", "缺货登记"
+            )
+            if (notForSaleNode != null) {
+                Log.w(TAG, "⚠️ 演出尚未开售")
+                notForSaleNode.performAction(AccessibilityNodeInfo.ACTION_CLICK)
+                delay(1000)
+                
+                // 点击确认
+                val confirmBtn = findNodeByAnyText("确定", "确认", "好的")
+                if (confirmBtn != null) {
+                    confirmBtn.performAction(AccessibilityNodeInfo.ACTION_CLICK)
+                    Log.i(TAG, "✅ 已设置开售提醒")
+                }
+            } else {
+                Log.w(TAG, "⚠️ 未找到购买按钮，可能在演出列表页，尝试点击第一个结果...")
+                // 尝试点击第一个演出
+                val firstResult = findNodeByText(keyword)
+                if (firstResult != null) {
+                    firstResult.performAction(AccessibilityNodeInfo.ACTION_CLICK)
+                    Log.i(TAG, "✅ 点击第一个演出结果")
+                    delay(3000)
+                }
+            }
         }
     }
     
@@ -469,6 +529,25 @@ class TicketGrabbingAccessibilityService : AccessibilityService() {
     private suspend fun selectTicketPrice(price: String) {
         try {
             Log.i(TAG, "🎫 开始选择票档：$price")
+            
+            // 0. 检查是否尚未开售
+            val notForSaleNode = findNodeByAnyText(
+                "尚未开售", "即将开售", "开售提醒",
+                "提醒我", "缺货登记"
+            )
+            if (notForSaleNode != null) {
+                Log.w(TAG, "⚠️ 演出尚未开售，尝试点击开售提醒...")
+                notForSaleNode.performAction(AccessibilityNodeInfo.ACTION_CLICK)
+                delay(2000)
+                
+                // 点击确认按钮
+                val confirmBtn = findNodeByAnyText("确定", "确认", "好的")
+                if (confirmBtn != null) {
+                    confirmBtn.performAction(AccessibilityNodeInfo.ACTION_CLICK)
+                    Log.i(TAG, "✅ 已设置开售提醒")
+                }
+                return
+            }
             
             // 1. 等待票档列表加载
             delay(1000)
