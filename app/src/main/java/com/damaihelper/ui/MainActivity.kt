@@ -110,8 +110,8 @@ class MainActivity : AppCompatActivity() {
 
     private fun setupTaskList() {
         taskAdapter = TaskAdapter(
-            onEdit = { Toast.makeText(this, "编辑: ${it.name}", Toast.LENGTH_SHORT).show() },
-            onDelete = { Toast.makeText(this, "删除: ${it.name}", Toast.LENGTH_SHORT).show() },
+            onEdit = { showEditTaskDialog(it) },
+            onDelete = { deleteTask(it) },
             onStartStop = { handleStartStopTask(it) }
         )
         taskRecyclerView.layoutManager = LinearLayoutManager(this)
@@ -222,7 +222,7 @@ class MainActivity : AppCompatActivity() {
      */
     private fun updateVersionTime() {
         // 格式：2026-03-30 22:35
-        versionUpdateTimeText.text = "📅 版本更新时间：2026-03-30 22:35"
+        versionUpdateTimeText.text = "📅 版本更新时间：2026-03-31 08:15"
     }
 
     private fun setupListeners() {

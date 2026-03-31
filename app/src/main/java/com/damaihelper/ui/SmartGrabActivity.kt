@@ -1,8 +1,11 @@
 // ============================================================================
 // 📅 创建日期：2026-03-30 22:30
-// 🔧 功能：智能抢票配置界面 - 简化版任务创建
+// 📅 最新修复：2026-03-31 08:15
+// 🔧 修复内容：
+//   1. 修复删除按钮无效问题（连接 onDelete 到实际删除函数）
+//   2. 增强智能抢票功能（创建任务后自动跳转大麦并启动搜索）
 //  说明：只需填写 3 项（歌手、日期、价位），其余自动完成
-//  版本：v2.2.0
+//  版本：v2.2.1
 // ============================================================================
 
 package com.damaihelper.ui
@@ -239,9 +242,46 @@ class SmartGrabActivity : AppCompatActivity() {
                     remark = "智能抢票模式创建"
                 )
 
-                db.taskDao().insertTask(task)
+                val taskId = db.taskDao().insertTask(task).toInt()
 
-                Toast.makeText(this@SmartGrabActivity, "✅ 任务创建成功！", Toast.LENGTH_LONG).show()
+                Toast.makeText(this@SmartGrabActivity, "✅ 任务创建成功！即将自动跳转到大麦...", Toast.LENGTH_LONG).show()
+
+                //  延迟后启动抢票服务并打开大麦
+                android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+                    try {
+                        // 启动抢票服务
+                        val service = com.damaihelper.service.TicketGrabbingAccessibilityService.getInstance()
+                        if (service != null) {
+                            // 自动开始抢票流程
+                            service.startGrabbing(task)
+                            
+                            // 打开大麦 App
+                            val damaiIntent = android.content.Intent(android.content.Intent.ACTION_VIEW).apply {
+                                setPackageName("cn.damai")
+                                setClassName("cn.damai", "cn.damai.main.activity.MainActivity")
+                                addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+                            }
+                            
+                            // 尝试启动大麦
+                            try {
+                                startActivity(damaiIntent)
+                                Toast.makeText(this@SmartGrabActivity, "🎫 已启动大麦 App，正在自动搜索...", Toast.LENGTH_LONG).show()
+                            } catch (e: Exception) {
+                                // 如果直接启动失败，尝试通用方式
+                                val webIntent = android.content.Intent(android.content.Intent.ACTION_VIEW).apply {
+                                    data = android.net.Uri.parse("https://www.damai.cn/")
+                                    addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+                                }
+                                startActivity(webIntent)
+                                Toast.makeText(this@SmartGrabActivity, "🌐 已打开大麦网页版，请手动操作", Toast.LENGTH_LONG).show()
+                            }
+                        } else {
+                            Toast.makeText(this@SmartGrabActivity, "️ 无障碍服务未启动，请手动开启", Toast.LENGTH_LONG).show()
+                        }
+                    } catch (e: Exception) {
+                        Toast.makeText(this@SmartGrabActivity, "️ 自动启动失败，请手动操作", Toast.LENGTH_LONG).show()
+                    }
+                }, 1000)
 
                 // 返回主页
                 finish()
