@@ -1,6 +1,6 @@
 // ============================================================================
 // 📅 修复日期：2026-03-20
-// 📅 最新修复：2026-03-31 12:35
+// 📅 最新修复：2026-03-31 13:00
 // 🔧 修复内容：
 //   - 添加页面检测容错处理
 //   - 优化演出信息抓取逻辑
@@ -17,7 +17,10 @@
 //   -  增强尚未开售处理（自动设置提醒）
 //   - ✨ 重构预约购票流程（点击预约→选场次→选票档→确认）
 //   - 🆕 新增 handlePopups 函数（自动处理弹窗干扰）
-//  版本：v2.2.7
+//   - 🆕 新增 checkIfInDetailPage 函数（检测是否在详情页）
+//   - 🆕 新增 clickReserveOrBuyButton 函数（点击预约/购买按钮）
+//   - 💡 支持用户手动打开演出页面后自动继续
+//  版本：v2.2.8
 // 📝 说明：核心无障碍服务 - 自动抢票、答题、验证码处理
 // ============================================================================
 
@@ -198,12 +201,30 @@ class TicketGrabbingAccessibilityService : AccessibilityService() {
                 delay(2000)  // 等待 App 启动
 
                 // ✅ 2. 搜索演出
-                Log.i(TAG, "步骤 2: 搜索演出 \'${task.concertKeyword}\'...")
-                searchConcert(task.concertKeyword)
-                delay(3000)  // 等待搜索结果
+                // ✅ 2. 检查是否已在演出详情页（用户手动打开的情况）
+                Log.i(TAG, "步骤 2: 检查当前页面...")
+                val isInDetailPage = checkIfInDetailPage(task.concertKeyword)
+                
+                if (isInDetailPage) {
+                    Log.i(TAG, "✅ 已在演出详情页，跳过搜索步骤")
+                } else {
+                    Log.i(TAG, "⚠️ 不在演出详情页，尝试搜索...")
+                    searchConcert(task.concertKeyword)
+                    delay(3000)
+                }
 
-                // ✅ 3. 进入详情页并选择票档
-                Log.i(TAG, "步骤 3: 选择票档 \'${task.selectedPrice}\'...")
+                // ✅ 3. 点击预约抢票/购买按钮
+                Log.i(TAG, "步骤 3: 点击预约/购买按钮...")
+                clickReserveOrBuyButton()
+                delay(2000)
+
+                // ✅ 4. 选择场次
+                Log.i(TAG, "步骤 4: 选择场次...")
+                selectConcertDate()
+                delay(1000)
+
+                // ✅ 5. 选择票档
+                Log.i(TAG, "步骤 5: 选择票档 '${task.selectedPrice}'...")
                 selectTicketPrice(task.selectedPrice)
                 delay(2000)
 
@@ -1698,3 +1719,114 @@ class TicketGrabbingAccessibilityService : AccessibilityService() {
     }
 
 }
+
+    /**
+     * 🆕 显示编辑任务对话框
+     */
+    private fun showEditTaskDialog(task: TicketTask) {
+        val view = LayoutInflater.from(this).inflate(R.layout.dialog_add_task, null)
+        
+        val etTaskName = view.findViewById<EditText>(R.id.etTaskName)
+        val etKeyword = view.findViewById<EditText>(R.id.etKeyword)
+        val etDate = view.findViewById<EditText>(R.id.etDate)
+        val etTime = view.findViewById<EditText>(R.id.etTime)
+        val etPrice = view.findViewById<EditText>(R.id.etPrice)
+        val etAudience = view.findViewById<EditText>(R.id.etAudience)
+        
+        // 填充现有数据
+        etTaskName.setText(task.name)
+        etKeyword.setText(task.concertKeyword)
+        etDate.setText(task.grabDate)
+        etTime.setText(if (task.grabTime > 0) {
+            val sdf = java.text.SimpleDateFormat("HH:mm", java.util.Locale.getDefault())
+            sdf.format(java.util.Date(task.grabTime))
+        } else "")
+        etPrice.setText(task.selectedPrice.ifEmpty { task.ticketPriceKeyword })
+        etAudience.setText(task.audienceName)
+        
+        AlertDialog.Builder(this)
+            .setTitle("编辑任务")
+            .setView(view)
+            .setPositiveButton("保存") { _, _ ->
+                // 保存逻辑（后续实现）
+                Toast.makeText(this, "保存功能待实现", Toast.LENGTH_SHORT).show()
+            }
+            .setNegativeButton("取消", null)
+            .show()
+    }
+
+    /**
+     * 🆕 删除任务
+     */
+    private fun deleteTask(task: TicketTask) {
+        AlertDialog.Builder(this)
+            .setTitle("确认删除")
+            .setMessage("确定要删除任务 ${task.name} 吗？")
+            .setPositiveButton("删除") { _, _ ->
+                lifecycleScope.launch {
+                    try {
+                        val db = TaskDatabase.getDatabase(this@MainActivity)
+                        db.taskDao().delete(task)
+                        Toast.makeText(this@MainActivity, "删除成功", Toast.LENGTH_SHORT).show()
+                        loadTasks()
+                    } catch (e: Exception) {
+                        Toast.makeText(this@MainActivity, "删除失败：${e.message}", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+            .setNegativeButton("取消", null)
+            .show()
+    }
+
+
+    /**
+     * 检查是否已在演出详情页
+     */
+    private suspend fun checkIfInDetailPage(keyword: String): Boolean {
+        // 检查是否有演出详情页的特征元素
+        val detailIndicators = arrayOf(
+            "预约抢票", "预约想看", "立即购买", "立即预订", "选座购票",
+            keyword, "${keyword}演唱会", "${keyword}巡演"
+        )
+        
+        for (indicator in detailIndicators) {
+            val node = findNodeByText(indicator)
+            if (node != null) {
+                Log.i(TAG, "✅ 找到详情页特征：$indicator")
+                return true
+            }
+        }
+        
+        return false
+    }
+    
+    /**
+     * 点击预约或购买按钮
+     */
+    private suspend fun clickReserveOrBuyButton() {
+        // 优先查找"预约抢票"按钮
+        val reserveBtn = findNodeByAnyText(
+            "预约抢票", "预约想看", "提前选票档",
+            "cn.damai:id/reserveBtn"
+        )
+        
+        if (reserveBtn != null) {
+            reserveBtn.performAction(AccessibilityNodeInfo.ACTION_CLICK)
+            Log.i(TAG, "✅ 点击预约抢票按钮")
+            return
+        }
+        
+        // 查找"立即购买"按钮
+        val buyBtn = findNodeByAnyText(
+            "立即购买", "立即预订", "选座购票",
+            "cn.damai:id/buyBtn"
+        )
+        
+        if (buyBtn != null) {
+            buyBtn.performAction(AccessibilityNodeInfo.ACTION_CLICK)
+            Log.i(TAG, "✅ 点击购买按钮")
+            return
+        }
+        
+        Log.w(TAG, "⚠️ 未找到预约/购买按钮，尝试继续...")
+    }
