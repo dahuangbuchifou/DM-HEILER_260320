@@ -1,10 +1,16 @@
 // ============================================================================
 // 📅 修复日期：2026-03-20
+// 📅 最新修复：2026-03-31 10:15
 // 🔧 修复内容：
 //   - 添加页面检测容错处理
 //   - 优化演出信息抓取逻辑
 //   - 增强空指针安全检查
 //   - 改进倒计时和抢票流程日志
+//   - 🆕 实现搜索演出功能（自动输入 + 滚动查找）
+//   - 🆕 实现选择票档功能（自动选择 + 售罄检测）
+//   - 🆕 实现选择观众功能
+//   - 🆕 实现提交订单功能
+//  版本：v2.2.2
 // 📝 说明：核心无障碍服务 - 自动抢票、答题、验证码处理
 // ============================================================================
 
@@ -12,6 +18,7 @@ package com.damaihelper.service
 
 import android.accessibilityservice.AccessibilityService
 import android.content.Intent
+import android.os.Bundle
 import android.util.Log
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
@@ -236,36 +243,175 @@ class TicketGrabbingAccessibilityService : AccessibilityService() {
      */
     private suspend fun searchConcert(keyword: String) {
         try {
+            Log.i(TAG, "🔍 开始搜索：$keyword")
+            
             // 1. 等待大麦 App 完全加载
             delay(1000)
             
-            // 2. 查找搜索框（大麦 App 首页顶部通常有搜索框）
-            val searchNode = findNodeByText("搜索") ?: findNodeByText("搜索演出") ?: findNodeByText(keyword)
+            // 2. 查找搜索框（多种可能）
+            val searchNode = findNodeByAnyText(
+                "搜索", "搜索演出", "搜索关键字",
+                DamaiConstants.SEARCH_BOX_ID
+            )
             
             if (searchNode != null) {
                 searchNode.performAction(AccessibilityNodeInfo.ACTION_CLICK)
                 Log.i(TAG, "✅ 点击搜索框")
                 delay(500)
                 
-                // 3. 输入关键词（需要输入法支持）
-                // 由于无障碍服务无法直接输入文字，需要用户手动输入
-                Log.i(TAG, "⚠️ 请在搜索框输入：$keyword")
+                // 3. 尝试输入关键词（使用 setText，如果支持）
+                val editTextNode = findEditableNode()
+                if (editTextNode != null) {
+                    val args = Bundle()
+                    args.putCharSequence(AccessibilityNodeInfo.ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE, keyword)
+                    editTextNode.performAction(AccessibilityNodeInfo.ACTION_SET_TEXT, args)
+                    Log.i(TAG, "✅ 输入关键词：$keyword")
+                    delay(500)
+                } else {
+                    Log.i(TAG, "⚠️ 无法自动输入，请手动输入：$keyword")
+                    // 等待用户手动输入
+                    delay(5000)
+                }
                 
-                // 4. 等待用户输入后，查找搜索按钮
-                delay(3000)
+                // 4. 点击搜索按钮
+                val searchBtnNode = findNodeByAnyText(
+                    DamaiConstants.SEARCH_BUTTON_TEXT,
+                    DamaiConstants.SEARCH_BUTTON_ID
+                )
+                if (searchBtnNode != null) {
+                    searchBtnNode.performAction(AccessibilityNodeInfo.ACTION_CLICK)
+                    Log.i(TAG, "✅ 点击搜索按钮")
+                    delay(2000)
+                }
                 
-                // 5. 点击搜索结果
-                val resultNode = findNodeByText(keyword)
+                // 5. 点击搜索结果（第一个匹配项）
+                val resultNode = waitForNodeByText(keyword, 5000)
                 if (resultNode != null) {
                     resultNode.performAction(AccessibilityNodeInfo.ACTION_CLICK)
                     Log.i(TAG, "✅ 点击搜索结果：$keyword")
+                    delay(3000) // 等待页面跳转
+                } else {
+                    Log.w(TAG, "⚠️ 未找到搜索结果，尝试滚动查找...")
+                    scrollAndFind(keyword)
                 }
             } else {
-                Log.w(TAG, "⚠️ 未找到搜索框，请手动搜索")
+                Log.w(TAG, "⚠️ 未找到搜索框，尝试直接导航...")
+                // 尝试通过其他方式进入搜索页
+                navigateToSearchPage()
             }
         } catch (e: Exception) {
             Log.e(TAG, "搜索演出失败", e)
+            throw e
         }
+    }
+    
+    /**
+     * 查找可编辑的节点（用于输入文本）
+     */
+    private fun findEditableNode(): AccessibilityNodeInfo? {
+        val rootNode = rootInActiveWindow ?: return null
+        return findEditableNodeRecursive(rootNode)
+    }
+    
+    private fun findEditableNodeRecursive(node: AccessibilityNodeInfo): AccessibilityNodeInfo? {
+        if (node.isEditable || node.className == DamaiConstants.EDIT_TEXT_CLASS) {
+            return node
+        }
+        
+        for (i in 0 until node.childCount) {
+            val child = node.getChild(i) ?: continue
+            val result = findEditableNodeRecursive(child)
+            if (result != null) {
+                return result
+            }
+        }
+        return null
+    }
+    
+    /**
+     * 等待节点出现（最多等待指定时间）
+     */
+    private suspend fun waitForNodeByText(text: String, timeoutMs: Long): AccessibilityNodeInfo? {
+        val startTime = System.currentTimeMillis()
+        while (System.currentTimeMillis() - startTime < timeoutMs) {
+            val node = findNodeByText(text)
+            if (node != null) {
+                return node
+            }
+            delay(500)
+        }
+        return null
+    }
+    
+    /**
+     * 滚动查找节点
+     */
+    private suspend fun scrollAndFind(text: String, maxScrolls: Int = 5) {
+        val rootNode = rootInActiveWindow ?: return
+        
+        for (i in 0 until maxScrolls) {
+            val node = findNodeByText(text)
+            if (node != null) {
+                node.performAction(AccessibilityNodeInfo.ACTION_CLICK)
+                Log.i(TAG, "✅ 滚动后找到并点击：$text")
+                return
+            }
+            
+            // 向下滚动
+            rootNode.performAction(AccessibilityNodeInfo.ACTION_SCROLL_FORWARD)
+            delay(500)
+        }
+        
+        Log.w(TAG, "⚠️ 滚动查找失败：$text")
+    }
+    
+    /**
+     * 通过多个可能文本查找节点
+     */
+    private fun findNodeByAnyText(vararg texts: String): AccessibilityNodeInfo? {
+        for (text in texts) {
+            val node = findNodeByText(text)
+            if (node != null) {
+                return node
+            }
+        }
+        return null
+    }
+    
+    /**
+     * 通过文本或 ID 查找节点
+     */
+    private fun findNodeByAnyText(id: String, vararg texts: String): AccessibilityNodeInfo? {
+        // 先尝试通过 ID 查找
+        val nodeById = findNodeById(id)
+        if (nodeById != null) {
+            return nodeById
+        }
+        // 再通过文本查找
+        return findNodeByAnyText(*texts)
+    }
+    
+    /**
+     * 通过 ID 查找节点
+     */
+    private fun findNodeById(resourceId: String): AccessibilityNodeInfo? {
+        val rootNode = rootInActiveWindow ?: return null
+        return findNodeByIdRecursive(rootNode, resourceId)
+    }
+    
+    private fun findNodeByIdRecursive(node: AccessibilityNodeInfo, resourceId: String): AccessibilityNodeInfo? {
+        if (node.viewIdResourceName == resourceId) {
+            return node
+        }
+        
+        for (i in 0 until node.childCount) {
+            val child = node.getChild(i) ?: continue
+            val result = findNodeByIdRecursive(child, resourceId)
+            if (result != null) {
+                return result
+            }
+        }
+        return null
     }
     
     /**
@@ -295,24 +441,180 @@ class TicketGrabbingAccessibilityService : AccessibilityService() {
      * 选择票档
      */
     private suspend fun selectTicketPrice(price: String) {
-        // TODO: 实现票档选择逻辑
-        Log.i(TAG, "🎫 选择票档：$price (待实现)")
+        try {
+            Log.i(TAG, "🎫 开始选择票档：$price")
+            
+            // 1. 等待票档列表加载
+            delay(1000)
+            
+            // 2. 查找票档列表容器
+            val priceList = findNodeByAnyText(
+                DamaiConstants.PRICE_LIST_ID,
+                DamaiConstants.RECYCLER_VIEW_CLASS
+            )
+            
+            if (priceList != null) {
+                Log.i(TAG, "✅ 找到票档列表")
+                
+                // 3. 查找目标票档
+                val priceNode = findNodeByText(price)
+                if (priceNode != null) {
+                    // 检查是否可售
+                    val parent = priceNode.parent
+                    val isSoldOut = parent?.text?.toString()?.contains(DamaiConstants.PRICE_STATUS_SOLD_OUT) == true ||
+                                   priceNode.text?.toString()?.contains(DamaiConstants.PRICE_STATUS_SOLD_OUT) == true
+                    
+                    if (isSoldOut) {
+                        Log.w(TAG, "⚠️ 票档已售罄：$price，尝试查找其他票档...")
+                        // 尝试查找其他可售票档
+                        selectAvailablePrice()
+                    } else {
+                        priceNode.performAction(AccessibilityNodeInfo.ACTION_CLICK)
+                        Log.i(TAG, "✅ 选择票档：$price")
+                        delay(1000)
+                        
+                        // 4. 点击确认选座
+                        val confirmBtn = findNodeByAnyText(
+                            DamaiConstants.CONFIRM_BUTTON_TEXT,
+                            DamaiConstants.CONFIRM_BUTTON_ID
+                        )
+                        if (confirmBtn != null) {
+                            confirmBtn.performAction(AccessibilityNodeInfo.ACTION_CLICK)
+                            Log.i(TAG, "✅ 点击确认选座")
+                            delay(2000)
+                        }
+                    }
+                } else {
+                    Log.w(TAG, "⚠️ 未找到票档：$price，尝试滚动查找...")
+                    scrollAndFind(price)
+                }
+            } else {
+                Log.w(TAG, "⚠️ 未找到票档列表，尝试查找价格文本...")
+                // 直接查找价格文本并点击
+                val priceNode = findNodeByText("¥$price") ?: findNodeByText(price)
+                if (priceNode != null) {
+                    priceNode.performAction(AccessibilityNodeInfo.ACTION_CLICK)
+                    Log.i(TAG, "✅ 点击价格：$price")
+                    delay(2000)
+                }
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "选择票档失败", e)
+        }
+    }
+    
+    /**
+     * 选择可售票档（当目标票档售罄时）
+     */
+    private suspend fun selectAvailablePrice() {
+        val rootNode = rootInActiveWindow ?: return
+        
+        // 查找所有包含"¥"的节点
+        for (i in 0 until rootNode.childCount) {
+            val child = rootNode.getChild(i) ?: continue
+            val text = child.text?.toString() ?: continue
+            
+            if (text.contains("¥") && !text.contains(DamaiConstants.PRICE_STATUS_SOLD_OUT)) {
+                child.performAction(AccessibilityNodeInfo.ACTION_CLICK)
+                Log.i(TAG, "✅ 选择可售票档：$text")
+                delay(1000)
+                return
+            }
+        }
+        
+        Log.w(TAG, "⚠️ 未找到可售票档")
     }
 
     /**
      * 选择观众
      */
     private suspend fun selectAudience(name: String) {
-        // TODO: 实现观众选择逻辑
-        Log.i(TAG, "👤 选择观众：$name (待实现)")
+        try {
+            Log.i(TAG, "👤 开始选择观众：$name")
+            
+            // 1. 等待观众列表加载
+            delay(1000)
+            
+            // 2. 查找观众列表
+            val audienceList = findNodeByAnyText(
+                DamaiConstants.AUDIENCE_LIST_ID,
+                DamaiConstants.AUDIENCE_LIST_CLASS
+            )
+            
+            if (audienceList != null) {
+                Log.i(TAG, "✅ 找到观众列表")
+                
+                // 3. 查找目标观众
+                val audienceNode = findNodeByText(name)
+                if (audienceNode != null) {
+                    // 点击观众项（会自动勾选）
+                    audienceNode.performAction(AccessibilityNodeInfo.ACTION_CLICK)
+                    Log.i(TAG, "✅ 选择观众：$name")
+                    delay(1000)
+                    
+                    // 4. 查找并点击确认按钮
+                    val confirmBtn = findNodeByAnyText(
+                        "确认", "确定", "下一步"
+                    )
+                    if (confirmBtn != null) {
+                        confirmBtn.performAction(AccessibilityNodeInfo.ACTION_CLICK)
+                        Log.i(TAG, "✅ 点击确认按钮")
+                        delay(2000)
+                    }
+                } else {
+                    Log.w(TAG, "⚠️ 未找到观众：$name，尝试滚动查找...")
+                    scrollAndFind(name)
+                }
+            } else {
+                Log.w(TAG, "⚠️ 未找到观众列表，可能无需选择观众")
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "选择观众失败", e)
+        }
     }
 
     /**
      * 提交订单
      */
     private suspend fun submitOrder() {
-        // TODO: 实现订单提交逻辑
-        Log.i(TAG, "📝 提交订单 (待实现)")
+        try {
+            Log.i(TAG, "📝 开始提交订单")
+            
+            // 1. 等待订单确认页加载
+            delay(2000)
+            
+            // 2. 查找提交订单按钮
+            val submitBtn = findNodeByAnyText(
+                DamaiConstants.SUBMIT_ORDER_BUTTON_TEXT,
+                DamaiConstants.SUBMIT_ORDER_BUTTON_ID,
+                DamaiConstants.SUBMIT_ORDER_BUTTON_ID_ALT
+            )
+            
+            if (submitBtn != null) {
+                submitBtn.performAction(AccessibilityNodeInfo.ACTION_CLICK)
+                Log.i(TAG, "✅ 点击提交订单按钮")
+                
+                // 3. 等待处理
+                delay(3000)
+                
+                // 4. 检查是否成功
+                val successNode = findNodeByAnyText(
+                    DamaiConstants.PAYMENT_SUCCESS_TEXT,
+                    "支付成功",
+                    "订单提交成功"
+                )
+                
+                if (successNode != null) {
+                    Log.i(TAG, "🎉 订单提交成功！")
+                } else {
+                    Log.i(TAG, "📋 订单提交流程完成，请检查支付状态")
+                }
+            } else {
+                Log.w(TAG, "⚠️ 未找到提交订单按钮，可能已在支付页")
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "提交订单失败", e)
+        }
     }
 
     fun stopGrabbing() {
