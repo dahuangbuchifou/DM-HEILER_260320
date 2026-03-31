@@ -1,6 +1,6 @@
 // ============================================================================
 // 📅 修复日期：2026-03-20
-// 📅 最新修复：2026-03-31 11:20
+// 📅 最新修复：2026-03-31 11:35
 // 🔧 修复内容：
 //   - 添加页面检测容错处理
 //   - 优化演出信息抓取逻辑
@@ -12,7 +12,8 @@
 //   - 🆕 实现提交订单功能
 //   - 🐛 修复函数重载歧义（findNodeByAnyText → findNodeByIdOrText）
 //   - 🐛 修复 insertTask 返回类型（Unit → Long）
-//  版本：v2.2.4
+//   -  优化搜索流程（优先点击搜索结果，其次点击搜索按钮）
+//  版本：v2.2.5
 // 📝 说明：核心无障碍服务 - 自动抢票、答题、验证码处理
 // ============================================================================
 
@@ -275,26 +276,41 @@ class TicketGrabbingAccessibilityService : AccessibilityService() {
                     delay(5000)
                 }
                 
-                // 4. 点击搜索按钮
-                val searchBtnNode = findNodeByIdOrText(
-                    DamaiConstants.SEARCH_BUTTON_ID,
-                    DamaiConstants.SEARCH_BUTTON_TEXT
-                )
-                if (searchBtnNode != null) {
-                    searchBtnNode.performAction(AccessibilityNodeInfo.ACTION_CLICK)
-                    Log.i(TAG, "✅ 点击搜索按钮")
-                    delay(2000)
-                }
-                
-                // 5. 点击搜索结果（第一个匹配项）
-                val resultNode = waitForNodeByText(keyword, 5000)
+                // 4. 等待搜索结果出现并点击（优先点击搜索结果）
+                Log.i(TAG, "🔍 等待搜索结果...")
+                val resultNode = waitForNodeByText(keyword, 3000)
                 if (resultNode != null) {
                     resultNode.performAction(AccessibilityNodeInfo.ACTION_CLICK)
                     Log.i(TAG, "✅ 点击搜索结果：$keyword")
                     delay(3000) // 等待页面跳转
                 } else {
-                    Log.w(TAG, "⚠️ 未找到搜索结果，尝试滚动查找...")
-                    scrollAndFind(keyword)
+                    Log.w(TAG, "⚠️ 未找到搜索结果，尝试点击搜索按钮...")
+                    
+                    // 点击键盘上的搜索按钮或搜索图标
+                    val searchBtnNode = findNodeByAnyText(
+                        "搜索", "搜索演出", "搜 索",
+                        "cn.damai:id/search_btn",
+                        "android:id/button1"
+                    )
+                    if (searchBtnNode != null) {
+                        searchBtnNode.performAction(AccessibilityNodeInfo.ACTION_CLICK)
+                        Log.i(TAG, "✅ 点击搜索按钮")
+                        delay(2000)
+                        
+                        // 再次等待搜索结果
+                        val resultNode2 = waitForNodeByText(keyword, 3000)
+                        if (resultNode2 != null) {
+                            resultNode2.performAction(AccessibilityNodeInfo.ACTION_CLICK)
+                            Log.i(TAG, "✅ 点击搜索结果：$keyword")
+                            delay(3000)
+                        } else {
+                            Log.w(TAG, "⚠️ 仍未找到搜索结果，尝试滚动查找...")
+                            scrollAndFind(keyword)
+                        }
+                    } else {
+                        Log.w(TAG, "⚠️ 未找到搜索按钮，尝试滚动查找...")
+                        scrollAndFind(keyword)
+                    }
                 }
             } else {
                 Log.w(TAG, "⚠️ 未找到搜索框，尝试直接导航...")
@@ -372,9 +388,17 @@ class TicketGrabbingAccessibilityService : AccessibilityService() {
      */
     private fun findNodeByAnyText(vararg texts: String): AccessibilityNodeInfo? {
         for (text in texts) {
-            val node = findNodeByText(text)
-            if (node != null) {
-                return node
+            // 先检查是否是资源 ID
+            if (text.contains(":")) {
+                val nodeById = findNodeById(text)
+                if (nodeById != null) {
+                    return nodeById
+                }
+            } else {
+                val node = findNodeByText(text)
+                if (node != null) {
+                    return node
+                }
             }
         }
         return null
