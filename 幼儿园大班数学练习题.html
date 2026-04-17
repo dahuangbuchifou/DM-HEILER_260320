@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>幼儿园大班数学练习题</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 1.5cm;
+        }
+        body {
+            font-family: "KaiTi", "楷体", "Comic Sans MS", cursive, sans-serif;
+            max-width: 210mm;
+            margin: 0 auto;
+            padding: 20px;
+            background: white;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            border-bottom: 3px dashed #FF6B9D;
+            padding-bottom: 15px;
+        }
+        .title {
+            font-size: 28px;
+            color: #FF6B9D;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        .info-bar {
+            display: flex;
+            justify-content: space-between;
+            font-size: 18px;
+            margin: 20px 0;
+            color: #333;
+        }
+        .info-bar span {
+            flex: 1;
+        }
+        .info-bar input {
+            border: none;
+            border-bottom: 2px solid #333;
+            width: 120px;
+            font-size: 16px;
+            text-align: center;
+        }
+        .section {
+            margin: 25px 0;
+            padding: 15px;
+            border-radius: 10px;
+        }
+        .section-title {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            padding: 8px 15px;
+            border-radius: 20px;
+            display: inline-block;
+        }
+        .basic .section-title {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            color: #2c5f58;
+        }
+        .intermediate .section-title {
+            background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%);
+            color: #b78900;
+        }
+        .advanced .section-title {
+            background: linear-gradient(135deg, #dfe6e9 0%, #b2bec3 100%);
+            color: #2d3436;
+        }
+        .challenge .section-title {
+            background: linear-gradient(135deg, #ff9ff3 0%, #f368e0 100%);
+            color: #8c1a5c;
+        }
+        .problems {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+        .problem {
+            font-size: 20px;
+            padding: 12px 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #FF6B9D;
+        }
+        .problem input {
+            width: 50px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 18px;
+            text-align: center;
+            margin-left: 10px;
+        }
+        .shape-section {
+            background: linear-gradient(135deg, #fff5f5 0%, #ffe3e3 100%);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 25px 0;
+        }
+        .shape-row {
+            display: flex;
+            justify-content: space-around;
+            margin: 15px 0;
+            flex-wrap: wrap;
+        }
+        .shape-item {
+            text-align: center;
+            margin: 10px;
+        }
+        .shape-box {
+            width: 60px;
+            height: 60px;
+            border: 3px solid #333;
+            margin: 0 auto 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+        }
+        .circle { border-radius: 50%; }
+        .square { }
+        .triangle { 
+            width: 0;
+            height: 0;
+            border: 30px solid transparent;
+            border-bottom: 60px solid #333;
+            border-radius: 0;
+        }
+        .rectangle {
+            width: 80px;
+            height: 50px;
+        }
+        .star { 
+            font-size: 40px;
+            border: none;
+        }
+        .heart {
+            font-size: 40px;
+            border: none;
+            color: #e74c3c;
+        }
+        .compare-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            margin: 10px 0;
+            font-size: 22px;
+        }
+        .compare-box {
+            padding: 10px 20px;
+            background: #e8f4f8;
+            border-radius: 8px;
+            min-width: 60px;
+            text-align: center;
+        }
+        .compare-input {
+            width: 40px;
+            font-size: 24px;
+            text-align: center;
+            border: 2px solid #3498db;
+            border-radius: 5px;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px dashed #ccc;
+            color: #999;
+            font-size: 14px;
+        }
+        .encouragement {
+            text-align: center;
+            font-size: 18px;
+            color: #FF6B9D;
+            margin: 20px 0;
+            font-weight: bold;
+        }
+        @media print {
+            body { 
+                padding: 0;
+                max-width: none;
+            }
+            .section {
+                page-break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="title">🌈 幼儿园大班数学练习题 🌈</div>
+        <div class="info-bar">
+            <span>姓名：<input type="text"></span>
+            <span>日期：<input type="text"></span>
+            <span>得分：<input type="text"></span>
+        </div>
+    </div>
+
+    <!-- 基础练习 -->
+    <div class="section basic">
+        <div class="section-title">🌟 基础练习（10 以内加减法）</div>
+        <div class="problems">
+            <div class="problem">1. 5 + 3 = <input type="text"></div>
+            <div class="problem">2. 8 - 4 = <input type="text"></div>
+            <div class="problem">3. 7 + 2 = <input type="text"></div>
+            <div class="problem">4. 9 - 5 = <input type="text"></div>
+            <div class="problem">5. 6 + 4 = <input type="text"></div>
+            <div class="problem">6. 10 - 3 = <input type="text"></div>
+            <div class="problem">7. 4 + 5 = <input type="text"></div>
+            <div class="problem">8. 8 - 6 = <input type="text"></div>
+            <div class="problem">9. 3 + 6 = <input type="text"></div>
+            <div class="problem">10. 7 - 4 = <input type="text"></div>
+        </div>
+    </div>
+
+    <!-- 进阶练习 -->
+    <div class="section intermediate">
+        <div class="section-title">🚀 进阶练习（连加连减）</div>
+        <div class="problems">
+            <div class="problem">1. 5 + 3 - 2 = <input type="text"></div>
+            <div class="problem">2. 8 - 4 + 3 = <input type="text"></div>
+            <div class="problem">3. 7 + 2 - 5 = <input type="text"></div>
+            <div class="problem">4. 9 - 6 + 4 = <input type="text"></div>
+            <div class="problem">5. 6 + 4 - 3 = <input type="text"></div>
+            <div class="problem">6. 10 - 5 + 2 = <input type="text"></div>
+            <div class="problem">7. 4 + 4 - 6 = <input type="text"></div>
+            <div class="problem">8. 8 - 3 + 4 = <input type="text"></div>
+        </div>
+    </div>
+
+    <!-- 提高练习 -->
+    <div class="section advanced">
+        <div class="section-title">💪 提高练习（20 以内加减法）</div>
+        <div class="problems">
+            <div class="problem">1. 10 + 5 = <input type="text"></div>
+            <div class="problem">2. 15 - 7 = <input type="text"></div>
+            <div class="problem">3. 12 + 6 = <input type="text"></div>
+            <div class="problem">4. 18 - 9 = <input type="text"></div>
+            <div class="problem">5. 14 + 3 = <input type="text"></div>
+            <div class="problem">6. 16 - 8 = <input type="text"></div>
+            <div class="problem">7. 11 + 7 = <input type="text"></div>
+            <div class="problem">8. 20 - 5 = <input type="text"></div>
+            <div class="problem">9. 13 + 4 = <input type="text"></div>
+            <div class="problem">10. 17 - 9 = <input type="text"></div>
+        </div>
+    </div>
+
+    <!-- 图形认知 -->
+    <div class="shape-section">
+        <div class="section-title">🎨 图形认知（数一数，填一填）</div>
+        <div class="shape-row">
+            <div class="shape-item">
+                <div class="shape-box circle" style="background: #e74c3c;"></div>
+                <div>圆形</div>
+                <div>有 <input type="text" style="width:40px;text-align:center;"> 个</div>
+            </div>
+            <div class="shape-item">
+                <div class="shape-box square" style="background: #3498db;"></div>
+                <div>正方形</div>
+                <div>有 <input type="text" style="width:40px;text-align:center;"> 个</div>
+            </div>
+            <div class="shape-item">
+                <div class="shape-box triangle" style="border-bottom-color: #2ecc71;"></div>
+                <div>三角形</div>
+                <div>有 <input type="text" style="width:40px;text-align:center;"> 个</div>
+            </div>
+            <div class="shape-item">
+                <div class="shape-box rectangle" style="background: #f39c12;"></div>
+                <div>长方形</div>
+                <div>有 <input type="text" style="width:40px;text-align:center;"> 个</div>
+            </div>
+            <div class="shape-item">
+                <div class="shape-box star">⭐</div>
+                <div>五角星</div>
+                <div>有 <input type="text" style="width:40px;text-align:center;"> 个</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 比较大小 -->
+    <div class="section challenge">
+        <div class="section-title">🔍 比较大小（填 &gt;、&lt; 或 =）</div>
+        <div class="problems">
+            <div class="compare-row">
+                <span class="compare-box">5</span>
+                <input type="text" class="compare-input">
+                <span class="compare-box">8</span>
+            </div>
+            <div class="compare-row">
+                <span class="compare-box">10</span>
+                <input type="text" class="compare-input">
+                <span class="compare-box">7</span>
+            </div>
+            <div class="compare-row">
+                <span class="compare-box">6 + 3</span>
+                <input type="text" class="compare-input">
+                <span class="compare-box">9</span>
+            </div>
+            <div class="compare-row">
+                <span class="compare-box">15 - 5</span>
+                <input type="text" class="compare-input">
+                <span class="compare-box">12</span>
+            </div>
+            <div class="compare-row">
+                <span class="compare-box">8 + 7</span>
+                <input type="text" class="compare-input">
+                <span class="compare-box">14</span>
+            </div>
+            <div class="compare-row">
+                <span class="compare-box">20 - 10</span>
+                <input type="text" class="compare-input">
+                <span class="compare-box">5 + 5</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="encouragement">
+        🎉 小朋友真棒！继续加油哦！🎉
+    </div>
+
+    <div class="footer">
+        <p>家长签名：_______________ &nbsp;&nbsp;&nbsp; 完成时间：_______________</p>
+        <p>💡 温馨提示：请鼓励孩子独立完成，做完后一起检查订正</p>
+    </div>
+</body>
+</html>

@@ -1,0 +1,27 @@
+# SearXNG 最小化中文增强配置
+use_default_settings: true
+
+search:
+  formats:
+    - html
+    - json
+
+server:
+  secret_key: "change-me-to-a-random-key"
+  bind_address: "0.0.0.0"
+  port: 8080
+  limiter: false
+  public_instance: false
+
+engines:
+  # 百度
+  - name: baidu
+    engine: baidu
+    shortcut: bd
+    disabled: false
+    
+  # 必应
+  - name: bing
+    engine: bing
+    shortcut: bi
+    disabled: false
