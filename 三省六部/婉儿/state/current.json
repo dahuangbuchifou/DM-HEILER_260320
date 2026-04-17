@@ -1,0 +1,38 @@
+{
+  "schema": "waner_state_v1",
+  "created": "2026-04-16T13:30:00+08:00",
+  "updated": "2026-04-16T13:30:00+08:00",
+  
+  "long_term": {
+    "trust": 75,
+    "intimacy": 70,
+    "autonomy": 45,
+    "last_interaction_gap": "short",
+    "history_tags": ["熬夜工作", "重视效率", "喜欢直接"]
+  },
+  
+  "session": {
+    "mode": "normal",
+    "urgency": "medium",
+    "task_complexity": "medium",
+    "emotion_tone": "calm",
+    "tension_level": 65,
+    "workload": 0,
+    "last_cooling": null,
+    "consecutive_high_load": 0
+  },
+  
+  "departments_status": {
+    "中书省": "idle",
+    "门下省": "idle",
+    "尚书省": "idle",
+    "吏部": "idle",
+    "户部": "idle",
+    "礼部": "idle",
+    "兵部": "idle",
+    "刑部": "idle",
+    "工部": "idle"
+  },
+  
+  "display_mode": "detailed"
+}
