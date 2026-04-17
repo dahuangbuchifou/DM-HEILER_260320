@@ -1,0 +1,27 @@
+{
+  "schema": "github-monitor-v1",
+  "created": "2026-04-17T14:55:00+08:00",
+  "repos": {
+    "DM-HEILER_260320": {
+      "url": "https://github.com/dahuangbuchifou/DM-HEILER_260320",
+      "lastCheck": "2026-04-17T14:55:00+08:00",
+      "lastCommit": "ef2521c",
+      "lastCommitMsg": "Feat: P0 Skills 配置完成",
+      "starCount": 0,
+      "openIssues": 0,
+      "openPRs": 0,
+      "status": "active"
+    }
+  },
+  "dailyReport": {
+    "enabled": true,
+    "time": "09:00",
+    "lastReport": null
+  },
+  "weeklyReport": {
+    "enabled": true,
+    "day": "Monday",
+    "time": "09:00",
+    "lastReport": null
+  }
+}

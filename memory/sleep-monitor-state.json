@@ -1,0 +1,24 @@
+{
+  "schema": "sleep-monitor-v1",
+  "created": "2026-04-17T14:55:00+08:00",
+  "config": {
+    "sleepCheckHours": [23, 0, 1, 2, 3, 4, 5],
+    "restReminderInterval": 60,
+    "waterReminderInterval": 90,
+    "eyeCareReminderInterval": 120,
+    "lateNightThreshold": "23:00"
+  },
+  "lastCheck": {
+    "sleep": null,
+    "rest": null,
+    "water": null,
+    "eyeCare": null
+  },
+  "stats": {
+    "2026-04": {
+      "lateNightCount": 0,
+      "avgSleepTime": null,
+      "avgSleepDuration": null
+    }
+  }
+}

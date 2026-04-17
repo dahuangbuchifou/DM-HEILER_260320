@@ -1,0 +1,22 @@
+{
+  "schema": "model-usage-v1",
+  "created": "2026-04-17T14:55:00+08:00",
+  "currentModel": "dashscope-coding/qwen3.5-plus",
+  "rules": {
+    "code": "dashscope-coding/qwen3.5-plus",
+    "image": "dashscope/qwen3-vl-plus",
+    "complex": "dashscope-us/qwen3-max-2025-09-23",
+    "default": "dashscope-coding/qwen3.5-plus"
+  },
+  "usage": {
+    "2026-04": {
+      "qwen3.5-plus": {
+        "requests": 0,
+        "tokensIn": 0,
+        "tokensOut": 0,
+        "costCNY": 0
+      }
+    }
+  },
+  "totalCostCNY": 0
+}
