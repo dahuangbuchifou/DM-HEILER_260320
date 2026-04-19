@@ -39,37 +39,43 @@ def get_access_token():
         return None
 
 def list_events(days=1):
-    """查询日程"""
+    """查询日程 - 使用新版 API v2.0"""
+    # 获取新版 token
     token = get_access_token()
     if not token:
+        print("❌ 获取 Token 失败")
         return
     
     from datetime import datetime, timedelta
     now = datetime.now()
     end = now + timedelta(days=days)
     
-    # 使用 v2.0 API 查询事件
-    url = f'https://api.dingtalk.com/v2.0/calendar/users/me/events?start_time={now.isoformat()}Z&end_time={end.isoformat()}Z'
-    req = urllib.request.Request(url)
+    # 使用新版 API v2.0 (需要 Calendar.Event.Read 权限)
+    url = 'https://api.dingtalk.com/v2.0/calendar/users/me/events'
+    params = f'?start_time={now.isoformat()}Z&end_time={end.isoformat()}Z'
+    
+    req = urllib.request.Request(url + params)
     req.add_header('x-acs-dingtalk-access-token', token)
     
     try:
         with urllib.request.urlopen(req, timeout=10) as resp:
             result = json.load(resp)
-            print(f"📅 日程查询成功：{json.dumps(result, indent=2, ensure_ascii=False)}")
+            events = result.get('events', [])
+            print(f"📅 查询成功，共 {len(events)} 条日程")
+            for evt in events:
+                title = evt.get('summary', evt.get('title', '无标题'))
+                start = evt.get('start_time', '未知')
+                end_time = evt.get('end_time', '未知')
+                print(f"  - {title} ({start} ~ {end_time})")
+    except urllib.error.HTTPError as e:
+        error_body = e.read().decode('utf-8')
+        print(f"❌ HTTP 错误 {e.code}: {error_body}")
+        print("\n💡 可能原因:")
+        print("   1. 权限未生效（等待版本发布）")
+        print("   2. API 路径不正确")
+        print("   3. 需要企业管理员授权")
     except Exception as e:
-        print(f"查询失败：{e}")
-        # 尝试备用 API
-        print("尝试备用 API 路径...")
-        url2 = 'https://api.dingtalk.com/v1.0/calendar/users/me/calendars'
-        req2 = urllib.request.Request(url2)
-        req2.add_header('x-acs-dingtalk-access-token', token)
-        try:
-            with urllib.request.urlopen(req2, timeout=10) as resp:
-                calendars = json.load(resp)
-                print(f"📅 日历列表：{json.dumps(calendars, indent=2, ensure_ascii=False)}")
-        except Exception as e2:
-            print(f"备用 API 也失败：{e2}")
+        print(f"❌ 网络错误：{e}")
 
 def add_event(title, start, end, desc=''):
     """创建日程"""
