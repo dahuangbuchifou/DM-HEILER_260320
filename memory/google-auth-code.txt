@@ -1,0 +1,12 @@
+# Google OAuth 授权码
+# 获取时间：2026-04-18 11:50 AM
+# 用途：Google Calendar + Gmail API
+
+AUTH_CODE=4/1Aci98E-L6B2hgNG2dR-kQvG7SVVi83uuKAu9aH_f9EqdWeOvtnCtqQSs6jc
+
+# 状态：待换取 Refresh Token
+# 问题：服务器无法连接 Google API（网络超时）
+
+# 下一步：
+# 1. 配置代理后执行换取
+# 2. 或在本地有网络的机器上执行

@@ -1,0 +1,16 @@
+{
+  "lastChecks": {
+    "weather": 1713585780,
+    "sleep": 1713585780,
+    "github": 1713589380,
+    "calendar": 1713585780,
+    "model_stats": null
+  },
+  "lastWeather": {
+    "date": "2026-04-20",
+    "temp": "+9°C",
+    "condition": "⛅ 多云",
+    "wind": "东南风 30km/h",
+    "note": "风大温低，注意保暖"
+  }
+}
