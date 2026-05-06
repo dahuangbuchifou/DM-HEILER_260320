@@ -6,3 +6,11 @@
 /.gradle/
 /build/
 /app/build/
+
+# 敏感信息
+*.env
+credentials/
+*token*
+*secret*
+google-*.py
+dingtalk-*.py
