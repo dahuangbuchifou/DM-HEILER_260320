@@ -67,8 +67,9 @@ OpenClaw 服务器 ──HTTP──▶ Cloudflare Tunnel ──▶ 本地电脑 
 ## 📝 参考
 
 - 方案对比报告：`memory/tts-voice-cloning-comparison.md`
-- GPT-SoVITS GitHub：https://github.com/RVC-Boss/GPT-SoVITS
+- GPT-SoVITS 官方：https://github.com/RVC-Boss/GPT-SoVITS
+- **集成进度仓库：** https://github.com/dahuangbuchifou/GPT-SoVITS
 
 ---
 
-_最后更新：2026-05-06 11:06_
+_最后更新：2026-05-06 14:30_
